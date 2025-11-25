@@ -1,81 +1,48 @@
-// src/pages/MentorListPage.jsx
+import { useEffect, useState } from 'react'
+import { fetchMentors } from '../api/mentorApi'
 
 export default function MentorListPage() {
+  const [mentors, setMentors] = useState([])
+
+  useEffect(() => {
+    fetchMentors().then(data => setMentors(data))
+  }, [])
+
   return (
     <div>
       <h2 style={{ marginBottom: '16px', fontSize: '22px' }}>멘토 관리</h2>
 
-      {/* 검색 영역 */}
-      <div
-        style={{
-          marginBottom: '16px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          gap: '12px',
-        }}
-      >
-        <input
-          type="text"
-          placeholder="이름, 학번, 전공 등으로 검색"
-          style={{
-            flex: 1,
-            padding: '10px',
-            borderRadius: '8px',
-            border: '1px solid #d1d5db',
-          }}
-        />
-        <button
-          style={{
-            padding: '10px 16px',
-            borderRadius: '8px',
-            border: 'none',
-            backgroundColor: '#1f2933',
-            color: '#fff',
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          검색
-        </button>
-      </div>
-
-      {/* 멘토 목록 테이블 */}
       <div
         style={{
           backgroundColor: '#ffffff',
           borderRadius: '12px',
+          padding: '20px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-          overflow: 'hidden',
         }}
       >
+        <h3 style={{ marginBottom: '12px', fontSize: '18px' }}>멘토 목록</h3>
+
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead style={{ backgroundColor: '#f3f4f6' }}>
+          <thead>
             <tr>
-              <th style={thStyle}>번호</th>
-              <th style={thStyle}>이름</th>
-              <th style={thStyle}>학번</th>
-              <th style={thStyle}>전공</th>
-              <th style={thStyle}>멘토링 분야</th>
-              <th style={thStyle}>상태</th>
+              <th style={headerStyle}>이름</th>
+              <th style={headerStyle}>학번</th>
+              <th style={headerStyle}>전공</th>
+              <th style={headerStyle}>상담 분야</th>
+              <th style={headerStyle}>상태</th>
             </tr>
           </thead>
+
           <tbody>
-            <tr>
-              <td style={tdStyle}>1</td>
-              <td style={tdStyle}>김멘토</td>
-              <td style={tdStyle}>20201234</td>
-              <td style={tdStyle}>항공소프트웨어공학과</td>
-              <td style={tdStyle}>전공 공부, 진로 상담</td>
-              <td style={tdStyle}>활동 중</td>
-            </tr>
-            <tr>
-              <td style={tdStyle}>2</td>
-              <td style={tdStyle}>이멘토</td>
-              <td style={tdStyle}>20191234</td>
-              <td style={tdStyle}>항공기계정비</td>
-              <td style={tdStyle}>정비 자격증, 군 경력</td>
-              <td style={tdStyle}>대기</td>
-            </tr>
+            {mentors.map((mentor) => (
+              <tr key={mentor.id}>
+                <td style={cellStyle}>{mentor.name}</td>
+                <td style={cellStyle}>{mentor.studentId}</td>
+                <td style={cellStyle}>{mentor.major}</td>
+                <td style={cellStyle}>{mentor.field}</td>
+                <td style={cellStyle}>{mentor.status}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
@@ -83,17 +50,15 @@ export default function MentorListPage() {
   )
 }
 
-const thStyle = {
-  padding: '10px 12px',
-  fontSize: '14px',
-  color: '#4b5563',
+const headerStyle = {
+  padding: '12px',
+  backgroundColor: '#f5f5f5',
+  borderBottom: '1px solid #ddd',
   textAlign: 'left',
-  borderBottom: '1px solid #e5e7eb',
 }
 
-const tdStyle = {
-  padding: '10px 12px',
+const cellStyle = {
+  padding: '12px',
+  borderBottom: '1px solid #eee',
   fontSize: '14px',
-  color: '#111827',
-  borderBottom: '1px solid #f3f4f6',
 }

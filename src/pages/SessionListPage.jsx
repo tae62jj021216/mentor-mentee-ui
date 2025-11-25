@@ -1,11 +1,21 @@
 // src/pages/SessionListPage.jsx
+import { useEffect, useState } from 'react'
+import { fetchSessions } from '../api/sessionApi'
 
 export default function SessionListPage() {
+  const [sessions, setSessions] = useState([])
+
+  useEffect(() => {
+    fetchSessions().then((data) => {
+      setSessions(data)
+    })
+  }, [])
+
   return (
     <div>
       <h2 style={{ marginBottom: '16px', fontSize: '22px' }}>상담/세션 관리</h2>
 
-      {/* 필터/검색 영역 */}
+      {/* 필터 + 검색 영역 */}
       <div
         style={{
           marginBottom: '16px',
@@ -16,20 +26,20 @@ export default function SessionListPage() {
       >
         <select
           style={{
-            padding: '8px 10px',
+            padding: '10px',
             borderRadius: '8px',
             border: '1px solid #d1d5db',
           }}
         >
           <option value="">전체 상태</option>
-          <option value="ongoing">진행 중</option>
-          <option value="pending">대기</option>
-          <option value="done">완료</option>
+          <option value="진행 중">진행 중</option>
+          <option value="대기">대기</option>
+          <option value="완료">완료</option>
         </select>
 
         <input
           type="text"
-          placeholder="멘토/멘티 이름으로 검색"
+          placeholder="멘토/멘티 이름, 주제로 검색"
           style={{
             flex: 1,
             padding: '10px',
@@ -44,7 +54,7 @@ export default function SessionListPage() {
             borderRadius: '8px',
             border: 'none',
             backgroundColor: '#1f2933',
-            color: '#fff',
+            color: '#ffffff',
             cursor: 'pointer',
             whiteSpace: 'nowrap',
           }}
@@ -53,7 +63,7 @@ export default function SessionListPage() {
         </button>
       </div>
 
-      {/* 상담/세션 목록 테이블 */}
+      {/* 세션 목록 테이블 */}
       <div
         style={{
           backgroundColor: '#ffffff',
@@ -65,32 +75,23 @@ export default function SessionListPage() {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead style={{ backgroundColor: '#f3f4f6' }}>
             <tr>
-              <th style={thStyle}>번호</th>
               <th style={thStyle}>멘토</th>
               <th style={thStyle}>멘티</th>
-              <th style={thStyle}>일시</th>
-              <th style={thStyle}>진행 방식</th>
+              <th style={thStyle}>주제</th>
               <th style={thStyle}>상태</th>
+              <th style={thStyle}>일자</th>
             </tr>
           </thead>
           <tbody>
-            {/* 더미 데이터 */}
-            <tr>
-              <td style={tdStyle}>1</td>
-              <td style={tdStyle}>김멘토</td>
-              <td style={tdStyle}>박멘티</td>
-              <td style={tdStyle}>2025-11-30 19:00</td>
-              <td style={tdStyle}>대면</td>
-              <td style={tdStyle}>진행 중</td>
-            </tr>
-            <tr>
-              <td style={tdStyle}>2</td>
-              <td style={tdStyle}>이멘토</td>
-              <td style={tdStyle}>최멘티</td>
-              <td style={tdStyle}>2025-12-02 20:00</td>
-              <td style={tdStyle}>온라인</td>
-              <td style={tdStyle}>대기</td>
-            </tr>
+            {sessions.map((session) => (
+              <tr key={session.id}>
+                <td style={tdStyle}>{session.mentorName}</td>
+                <td style={tdStyle}>{session.menteeName}</td>
+                <td style={tdStyle}>{session.topic}</td>
+                <td style={tdStyle}>{session.status}</td>
+                <td style={tdStyle}>{session.date}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

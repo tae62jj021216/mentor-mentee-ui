@@ -1,6 +1,16 @@
 // src/pages/MenteeListPage.jsx
+import { useEffect, useState } from 'react'
+import { fetchMentees } from '../api/menteeApi'
 
 export default function MenteeListPage() {
+  const [mentees, setMentees] = useState([])
+
+  useEffect(() => {
+    fetchMentees().then((data) => {
+      setMentees(data)
+    })
+  }, [])
+
   return (
     <div>
       <h2 style={{ marginBottom: '16px', fontSize: '22px' }}>멘티 관리</h2>
@@ -51,29 +61,23 @@ export default function MenteeListPage() {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead style={{ backgroundColor: '#f3f4f6' }}>
             <tr>
-              <th style={thStyle}>번호</th>
               <th style={thStyle}>이름</th>
               <th style={thStyle}>학번</th>
+              <th style={thStyle}>전공</th>
               <th style={thStyle}>관심 분야</th>
               <th style={thStyle}>멘토 매칭 상태</th>
             </tr>
           </thead>
           <tbody>
-            {/* 더미 데이터 */}
-            <tr>
-              <td style={tdStyle}>1</td>
-              <td style={tdStyle}>박멘티</td>
-              <td style={tdStyle}>20213456</td>
-              <td style={tdStyle}>취업 상담, 진로 탐색</td>
-              <td style={tdStyle}>매칭 완료</td>
-            </tr>
-            <tr>
-              <td style={tdStyle}>2</td>
-              <td style={tdStyle}>최멘티</td>
-              <td style={tdStyle}>20225678</td>
-              <td style={tdStyle}>전공 공부, 자격증 준비</td>
-              <td style={tdStyle}>매칭 대기</td>
-            </tr>
+            {mentees.map((mentee) => (
+              <tr key={mentee.id}>
+                <td style={tdStyle}>{mentee.name}</td>
+                <td style={tdStyle}>{mentee.studentId}</td>
+                <td style={tdStyle}>{mentee.major}</td>
+                <td style={tdStyle}>{mentee.interest}</td>
+                <td style={tdStyle}>{mentee.matchStatus}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
