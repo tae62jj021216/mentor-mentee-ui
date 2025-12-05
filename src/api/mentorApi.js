@@ -1,29 +1,37 @@
 // src/api/mentorApi.js
+import httpClient from './httpClient'
 
-// 지금은 임시 더미 데이터.
-// 나중에 백엔드 완성되면 이 함수 안만 실제 서버 호출(fetch/axios) 코드로 교체하면 된다.
-export async function fetchMentors() {
-  // 예시: 나중에는 이렇게 바뀔 예정
-  // const res = await fetch('http://localhost:8080/api/mentors');
-  // return await res.json();
+// 멘토 리스트 조회 (관리자 또는 멘토용)
+// 백엔드: GET /api/users?role=MENTOR&page=0&size=20 를 기대하지만
+// 실제로는 모든 유저를 내려주는 것 같아서, 프론트에서 role=MENTOR만 필터링한다.
+export async function fetchMentorList({ page = 0, size = 20 } = {}) {
+  const query = `?role=MENTOR&page=${page}&size=${size}`
 
-  // 현재는 UI 개발을 위해 임시 값만 반환
-  return [
-    {
-      id: 1,
-      name: '김태윤',
-      studentId: '202100014',
-      major: '항공소프트웨어공학과',
-      field: '전공 공부, 진로 상담',
-      status: '활동 중',
-    },
-    {
-      id: 2,
-      name: '임성준',
-      studentId: '202100192',
-      major: '항공소프트웨어공학과',
-      field: '학술제 준비, 전공 공부',
-      status: '대기',
-    },
-  ]
+  const res = await httpClient(`/users${query}`, {
+    method: 'GET',
+  })
+
+  if (!res || res.success === false) {
+    const msg = res?.message || '멘토 목록을 불러오지 못했습니다.'
+    throw new Error(msg)
+  }
+
+  const pageData = res.data || {}
+  const allUsers = pageData.content || []
+
+  const mentors = allUsers.filter((u) => u.role === 'MENTOR')
+
+  const totalElements = mentors.length
+  const pageSize = size || pageData.size || 20
+  const totalPages = Math.max(1, Math.ceil(totalElements / pageSize))
+
+  // 지금은 데이터가 적으니까 한 페이지에 다 보여주는 식으로 단순하게 맞춘다.
+  return {
+    ...pageData,
+    content: mentors,
+    totalElements,
+    totalPages,
+    number: 0,        // 0페이지 (1페이지)로 고정
+    size: pageSize,
+  }
 }

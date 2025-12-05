@@ -2,153 +2,167 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
+/** 역할에 따라 보여줄 메뉴 구성 */
+function getMenuItems(role) {
+  if (role === 'ADMIN') {
+    return [
+      { label: '대시보드', path: '/dashboard' },
+      { label: '워크스페이스', path: '/workspaces' },
+      { label: '멘토 목록', path: '/mentors' },
+      { label: '멘티 목록', path: '/mentees' },
+      { label: '세션 목록', path: '/sessions' },
+    ]
+  }
+
+  if (role === 'MENTOR') {
+    return [
+      { label: '멘토 대시보드', path: '/dashboard' },
+      { label: '내 워크스페이스', path: '/workspaces' },
+      { label: '세션 목록', path: '/sessions' },
+      { label: '멘티 목록', path: '/mentees' },
+    ]
+  }
+
+  if (role === 'MENTEE') {
+    return [
+      { label: '멘티 대시보드', path: '/mentee-dashboard' },
+      { label: '내 워크스페이스', path: '/workspaces' },
+      { label: '세션 목록', path: '/sessions' },
+    ]
+  }
+
+  // 게스트
+  return [{ label: '로그인', path: '/login' }]
+}
+
 export default function MainLayout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+
+  const isAuthenticated = !!user
+  const role = user?.role || null
+  const menuItems = getMenuItems(role)
+
+  const displayName = user?.name || user?.username || user?.email || '게스트'
 
   const handleLogout = () => {
     logout()
     navigate('/login', { replace: true })
   }
 
-  const roleLabel =
-    user?.role === 'ADMIN'
-      ? '관리자'
-      : user?.role === 'MENTOR'
-      ? '멘토'
-      : user?.role === 'MENTEE'
-      ? '멘티'
-      : ''
-
-  const linkStyle = ({ isActive }) => ({
-    display: 'block',
-    padding: '10px 14px',
-    borderRadius: '10px',
-    fontSize: '14px',
-    color: isActive ? '#ffffff' : '#e5e7eb',
-    backgroundColor: isActive ? '#111827' : 'transparent',
-    textDecoration: 'none',
-  })
-
   return (
     <div
       style={{
-        minHeight: '100vh',
         display: 'flex',
+        minHeight: '100vh',
         backgroundColor: '#f3f4f6',
       }}
     >
       {/* 사이드바 */}
       <aside
         style={{
-          width: '220px',
+          width: '260px',
           backgroundColor: '#020617',
           color: '#e5e7eb',
-          padding: '20px 16px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '20px',
+          padding: '20px 18px',
         }}
       >
-        <div style={{ fontSize: '18px', fontWeight: 700, marginBottom: '4px' }}>
-          멘토·멘티 시스템
-        </div>
-        <div style={{ fontSize: '12px', color: '#9ca3af' }}>
-          {user
-            ? `${user.username} (${roleLabel})로 로그인됨`
-            : '로그인하지 않은 상태입니다.'}
-        </div>
+        {/* 상단 소개 영역 */}
+        <div style={{ marginBottom: '32px' }}>
+          <div
+            style={{
+              fontSize: '18px',
+              fontWeight: 700,
+              marginBottom: '6px',
+            }}
+          >
+            멘토·멘티 시스템
+          </div>
 
-        <nav style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          {/* 관리자 메뉴 */}
-          {user?.role === 'ADMIN' && (
-            <>
-              <NavLink to="/dashboard" style={linkStyle}>
-                대시보드
-              </NavLink>
-              <NavLink to="/mentors" style={linkStyle}>
-                멘토 관리
-              </NavLink>
-              <NavLink to="/mentees" style={linkStyle}>
-                멘티 관리
-              </NavLink>
-              <NavLink to="/sessions" style={linkStyle}>
-                상담/세션 관리
-              </NavLink>
-            </>
-          )}
-
-          {/* 멘토 메뉴 */}
-          {user?.role === 'MENTOR' && (
-            <>
-              <NavLink to="/mentors" style={linkStyle}>
-                내 멘티 관리
-              </NavLink>
-              <NavLink to="/sessions" style={linkStyle}>
-                내 상담 세션
-              </NavLink>
-            </>
-          )}
-
-          {/* 멘티 메뉴 */}
-          {user?.role === 'MENTEE' && (
-            <>
-              <NavLink to="/mentee-dashboard" style={linkStyle}>
-                멘티 대시보드
-              </NavLink>
-              <NavLink to="/sessions" style={linkStyle}>
-                나의 상담 세션
-              </NavLink>
-            </>
-          )}
-
-          {/* 혹시 로그인 전인데 메인 레이아웃이 렌더링되면 기본 메뉴 숨김 */}
-          {!user && (
+          {isAuthenticated ? (
             <div style={{ fontSize: '13px', color: '#9ca3af' }}>
+              {displayName} ({role || 'ROLE 없음'})로 로그인됨
+            </div>
+          ) : (
+            <div style={{ fontSize: '13px', color: '#9ca3af' }}>
+              로그인하지 않은 상태입니다.
+              <br />
               로그인 후 메뉴가 표시됩니다.
             </div>
           )}
+        </div>
+
+        {/* 메뉴 목록 */}
+        <nav style={{ flex: 1 }}>
+          {menuItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              style={({ isActive }) => ({
+                display: 'block',
+                padding: '10px 12px',
+                borderRadius: '10px',
+                fontSize: '14px',
+                marginBottom: '6px',
+                textDecoration: 'none',
+                color: isActive ? '#0f172a' : '#e5e7eb',
+                backgroundColor: isActive ? '#e5e7eb' : 'transparent',
+              })}
+            >
+              {item.label}
+            </NavLink>
+          ))}
         </nav>
 
-        <div style={{ marginTop: 'auto' }}>
-          {user ? (
+        {/* 하단: 로그인/로그아웃 */}
+        <div style={{ marginTop: '16px' }}>
+          {!isAuthenticated ? (
             <button
-              onClick={handleLogout}
-              style={{
-                width: '100%',
-                padding: '8px 10px',
-                borderRadius: '10px',
-                border: '1px solid #4b5563',
-                backgroundColor: 'transparent',
-                color: '#e5e7eb',
-                fontSize: '13px',
-                cursor: 'pointer',
-              }}
-            >
-              로그아웃
-            </button>
-          ) : (
-            <button
+              type="button"
               onClick={() => navigate('/login')}
               style={{
                 width: '100%',
-                padding: '8px 10px',
+                padding: '10px 12px',
                 borderRadius: '10px',
                 border: '1px solid #4b5563',
                 backgroundColor: 'transparent',
                 color: '#e5e7eb',
-                fontSize: '13px',
+                fontSize: '14px',
                 cursor: 'pointer',
               }}
             >
               로그인 화면으로
             </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleLogout}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                borderRadius: '10px',
+                border: '1px solid #4b5563',
+                backgroundColor: 'transparent',
+                color: '#e5e7eb',
+                fontSize: '14px',
+                cursor: 'pointer',
+              }}
+            >
+              로그아웃
+            </button>
           )}
         </div>
       </aside>
 
-      {/* 메인 영역 */}
-      <main style={{ flex: 1, padding: '24px' }}>
+      {/* 메인 콘텐트 영역 */}
+      <main
+        style={{
+          flex: 1,
+          backgroundColor: '#f9fafb',
+        }}
+      >
         <Outlet />
       </main>
     </div>

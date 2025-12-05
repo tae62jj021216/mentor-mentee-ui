@@ -1,259 +1,261 @@
 // src/pages/MenteeListPage.jsx
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { fetchMenteeList } from '../api/menteeApi'
 
 export default function MenteeListPage() {
-  const [form, setForm] = useState({
-    name: '',
-    studentId: '',
-    major: '',
-    interest: '',
-    matchStatus: '매칭 대기',
+  const [page, setPage] = useState(0)
+  const [data, setData] = useState({
+    content: [],
+    totalElements: 0,
+    totalPages: 1,
+    number: 0,
+    size: 20,
   })
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  const [search, setSearch] = useState('')
+  useEffect(() => {
+    async function loadMentees() {
+      try {
+        setLoading(true)
+        setError(null)
 
-  const [mentees, setMentees] = useState([
-    {
-      id: 1,
-      name: '박멘티',
-      studentId: '20213456',
-      major: '항공소프트웨어공학과',
-      interest: '취업 상담, 진로 탐색',
-      matchStatus: '매칭 완료',
-    },
-    {
-      id: 2,
-      name: '최멘티',
-      studentId: '20225678',
-      major: '항공기계정비',
-      interest: '전공 공부, 자격증 준비',
-      matchStatus: '매칭 대기',
-    },
-  ])
+        const result = await fetchMenteeList({ page, size: data.size })
 
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setForm((prev) => ({ ...prev, [name]: value }))
-  }
+        setData((prev) => ({
+          ...prev,
+          ...result,
+        }))
+      } catch (err) {
+        console.error('멘티 목록 로딩 실패:', err)
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
+        const message =
+          err?.response?.data?.message ||
+          err.message ||
+          '멘티 목록을 불러오는 중 오류가 발생했습니다.'
 
-    if (!form.name.trim()) {
-      alert('멘티 이름을 입력하세요.')
-      return
+        setError(message)
+      } finally {
+        setLoading(false)
+      }
     }
 
-    const newMentee = {
-      id: mentees.length + 1,
-      ...form,
-    }
+    loadMentees()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page])
 
-    setMentees((prev) => [...prev, newMentee])
+  const mentees = data.content || []
+  const hasPrev = page > 0
+  const hasNext =
+    typeof data.totalPages === 'number' && page < data.totalPages - 1
 
-    setForm({
-      name: '',
-      studentId: '',
-      major: '',
-      interest: '',
-      matchStatus: '매칭 대기',
-    })
+  const handlePrev = () => {
+    if (hasPrev) setPage((p) => p - 1)
   }
 
-  const filteredMentees = mentees.filter((m) => {
-    const keyword = search.toLowerCase()
-    return (
-      m.name.toLowerCase().includes(keyword) ||
-      m.studentId.toLowerCase().includes(keyword) ||
-      m.major.toLowerCase().includes(keyword) ||
-      m.interest.toLowerCase().includes(keyword) ||
-      m.matchStatus.toLowerCase().includes(keyword)
-    )
-  })
-
-  const rowStyle = {
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: '12px',
-    marginBottom: '10px',
-  }
-
-  const fieldColStyle = {
-    flex: '0 0 260px',
-  }
-
-  const inputStyle = {
-    width: '100%',
-    padding: '10px 12px',
-    borderRadius: '10px',
-    border: '1px solid #d1d5db',
+  const handleNext = () => {
+    if (hasNext) setPage((p) => p + 1)
   }
 
   return (
-    <div>
-      <h2 style={{ marginBottom: '16px', fontSize: '22px' }}>멘티 관리</h2>
-
-      {/* 멘티 등록 카드 */}
+    <div
+      style={{
+        minHeight: '100vh',
+        backgroundColor: '#f3f4f6',
+        padding: '24px',
+      }}
+    >
       <div
         style={{
-          backgroundColor: '#ffffff',
-          borderRadius: '16px',
-          padding: '20px 24px',
-          boxShadow: '0 10px 30px rgba(15,23,42,0.08)',
-          marginBottom: '20px',
-          maxWidth: '620px',
+          maxWidth: '1100px',
+          margin: '0 auto',
         }}
       >
-        <h3 style={{ marginBottom: '16px', fontSize: '18px' }}>멘티 등록</h3>
+        <h1
+          style={{
+            fontSize: '22px',
+            fontWeight: '700',
+            marginBottom: '8px',
+          }}
+        >
+          멘티 목록
+        </h1>
+        <p
+          style={{
+            fontSize: '14px',
+            color: '#6b7280',
+            marginBottom: '16px',
+          }}
+        >
+          프로그램에 등록된 멘티 계정 목록입니다.
+        </p>
 
-        <form onSubmit={handleSubmit}>
-          {/* 이름 / 학번 */}
-          <div style={rowStyle}>
-            <div style={fieldColStyle}>
-              <label style={{ display: 'block', fontSize: '13px', marginBottom: '4px' }}>
-                이름
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                placeholder="멘티 이름"
-                style={inputStyle}
-              />
-            </div>
-
-            <div style={fieldColStyle}>
-              <label style={{ display: 'block', fontSize: '13px', marginBottom: '4px' }}>
-                학번
-              </label>
-              <input
-                type="text"
-                name="studentId"
-                value={form.studentId}
-                onChange={handleChange}
-                placeholder="학번"
-                style={inputStyle}
-              />
-            </div>
-          </div>
-
-          {/* 전공 / 관심 분야 */}
-          <div style={rowStyle}>
-            <div style={fieldColStyle}>
-              <label style={{ display: 'block', fontSize: '13px', marginBottom: '4px' }}>
-                전공
-              </label>
-              <input
-                type="text"
-                name="major"
-                value={form.major}
-                onChange={handleChange}
-                placeholder="예: 항공소프트웨어공학과"
-                style={inputStyle}
-              />
-            </div>
-
-            <div style={fieldColStyle}>
-              <label style={{ display: 'block', fontSize: '13px', marginBottom: '4px' }}>
-                관심 분야
-              </label>
-              <input
-                type="text"
-                name="interest"
-                value={form.interest}
-                onChange={handleChange}
-                placeholder="예: 취업 상담, 진로 탐색"
-                style={inputStyle}
-              />
-            </div>
-          </div>
-
-          {/* 매칭 상태 */}
-          <div style={{ marginBottom: '16px', maxWidth: '260px' }}>
-            <label style={{ display: 'block', fontSize: '13px', marginBottom: '4px' }}>
-              멘토 매칭 상태
-            </label>
-            <select
-              name="matchStatus"
-              value={form.matchStatus}
-              onChange={handleChange}
-              style={inputStyle}
-            >
-              <option value="매칭 대기">매칭 대기</option>
-              <option value="매칭 진행 중">매칭 진행 중</option>
-              <option value="매칭 완료">매칭 완료</option>
-            </select>
-          </div>
-
-          <button
-            type="submit"
+        {/* 로딩 */}
+        {loading && (
+          <div
             style={{
-              padding: '10px 18px',
+              padding: '12px 16px',
               borderRadius: '10px',
-              border: 'none',
-              backgroundColor: '#111827',
-              color: '#ffffff',
+              backgroundColor: '#ffffff',
+              boxShadow: '0 4px 12px rgba(15,23,42,0.08)',
               fontSize: '14px',
-              cursor: 'pointer',
             }}
           >
-            멘티 등록
-          </button>
-        </form>
-      </div>
+            멘티 목록을 불러오는 중입니다...
+          </div>
+        )}
 
-      {/* 검색 + 목록 카드 */}
-      <div
-        style={{
-          backgroundColor: '#ffffff',
-          borderRadius: '16px',
-          padding: '16px 20px',
-          boxShadow: '0 10px 30px rgba(15,23,42,0.08)',
-          maxWidth: '620px',
-        }}
-      >
-        {/* 🔍 검색 입력 (폭 제한) */}
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="이름, 학번, 전공, 관심 분야, 상태로 검색"
-          style={{
-            width: '100%',
-            maxWidth: '400px', // 검색란 가로 길이 줄이기
-            padding: '10px 12px',
-            marginBottom: '12px',
-            borderRadius: '10px',
-            border: '1px solid #d1d5db',
-            fontSize: '14px',
-          }}
-        />
+        {/* 에러 */}
+        {!loading && error && (
+          <div
+            style={{
+              padding: '12px 16px',
+              borderRadius: '10px',
+              backgroundColor: '#fef2f2',
+              color: '#b91c1c',
+              boxShadow: '0 4px 12px rgba(15,23,42,0.08)',
+              fontSize: '14px',
+              marginBottom: '12px',
+            }}
+          >
+            멘티 목록을 불러오지 못했습니다.
+            <br />
+            <span style={{ fontSize: '13px', color: '#991b1b' }}>{error}</span>
+          </div>
+        )}
 
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
-          <thead>
-            <tr style={{ backgroundColor: '#f3f4f6' }}>
-              <th style={{ textAlign: 'left', padding: '8px' }}>이름</th>
-              <th style={{ textAlign: 'left', padding: '8px' }}>학번</th>
-              <th style={{ textAlign: 'left', padding: '8px' }}>전공</th>
-              <th style={{ textAlign: 'left', padding: '8px' }}>관심 분야</th>
-              <th style={{ textAlign: 'left', padding: '8px' }}>멘토 매칭 상태</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredMentees.map((m) => (
-              <tr key={m.id} style={{ borderTop: '1px solid #e5e7eb' }}>
-                <td style={{ padding: '8px' }}>{m.name}</td>
-                <td style={{ padding: '8px' }}>{m.studentId}</td>
-                <td style={{ padding: '8px' }}>{m.major}</td>
-                <td style={{ padding: '8px' }}>{m.interest}</td>
-                <td style={{ padding: '8px' }}>{m.matchStatus}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {/* 테이블 */}
+        {!loading && !error && (
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '12px',
+              boxShadow: '0 4px 12px rgba(15,23,42,0.06)',
+              overflow: 'hidden',
+            }}
+          >
+            <table
+              style={{
+                width: '100%',
+                borderCollapse: 'collapse',
+                fontSize: '14px',
+              }}
+            >
+              <thead
+                style={{
+                  backgroundColor: '#f9fafb',
+                  borderBottom: '1px solid #e5e7eb',
+                }}
+              >
+                <tr>
+                  <th style={thStyle}>ID</th>
+                  <th style={thStyle}>이름</th>
+                  <th style={thStyle}>이메일</th>
+                  <th style={thStyle}>전공</th>
+                  <th style={thStyle}>학번</th>
+                  <th style={thStyle}>역할</th>
+                </tr>
+              </thead>
+              <tbody>
+                {mentees.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      style={{
+                        padding: '12px 16px',
+                        textAlign: 'center',
+                        color: '#9ca3af',
+                      }}
+                    >
+                      표시할 멘티가 없습니다.
+                    </td>
+                  </tr>
+                ) : (
+                  mentees.map((mentee) => (
+                    <tr key={mentee.id}>
+                      <td style={tdStyle}>{mentee.id}</td>
+                      <td style={tdStyle}>{mentee.name}</td>
+                      <td style={tdStyle}>{mentee.email}</td>
+                      <td style={tdStyle}>{mentee.majorName}</td>
+                      <td style={tdStyle}>{mentee.studentId}</td>
+                      <td style={tdStyle}>{mentee.role}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+
+            {/* 페이징 */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '10px 16px',
+                borderTop: '1px solid #e5e7eb',
+                backgroundColor: '#f9fafb',
+              }}
+            >
+              <div style={{ fontSize: '13px', color: '#6b7280' }}>
+                총 {data.totalElements ?? 0}명
+              </div>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  onClick={handlePrev}
+                  disabled={!hasPrev}
+                  style={{
+                    padding: '6px 10px',
+                    borderRadius: '8px',
+                    border: '1px solid #d1d5db',
+                    backgroundColor: hasPrev ? '#ffffff' : '#e5e7eb',
+                    color: '#374151',
+                    fontSize: '13px',
+                    cursor: hasPrev ? 'pointer' : 'default',
+                  }}
+                >
+                  이전
+                </button>
+                <span style={{ fontSize: '13px', color: '#6b7280' }}>
+                  {data.number + 1} / {data.totalPages || 1}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  disabled={!hasNext}
+                  style={{
+                    padding: '6px 10px',
+                    borderRadius: '8px',
+                    border: '1px solid #d1d5db',
+                    backgroundColor: hasNext ? '#ffffff' : '#e5e7eb',
+                    color: '#374151',
+                    fontSize: '13px',
+                    cursor: hasNext ? 'pointer' : 'default',
+                  }}
+                >
+                  다음
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
+}
+
+const thStyle = {
+  padding: '10px 12px',
+  textAlign: 'left',
+  fontWeight: 600,
+  fontSize: '13px',
+  color: '#4b5563',
+  borderBottom: '1px solid #e5e7eb',
+}
+
+const tdStyle = {
+  padding: '10px 12px',
+  borderBottom: '1px solid #f3f4f6',
+  color: '#374151',
+  fontSize: '14px',
 }

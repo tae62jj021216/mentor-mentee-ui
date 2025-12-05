@@ -1,14 +1,25 @@
 // src/api/dashboardApi.js
+import httpClient from './httpClient'
 
-// 지금은 임시 더미 데이터.
-// 나중에 백엔드 완성되면 이 함수 안만 실제 fetch 코드로 교체.
-export async function fetchDashboardSummary() {
+// 관리자 대시보드 합계 정보 가져오기
+// 백엔드 엔드포인트: GET /api/admin/dashboard
+export async function fetchAdminDashboardSummary() {
+  try {
+    const response = await httpClient.get('/admin/dashboard')
 
-  // 현재는 임시 값만 반환
-  return {
-    totalMentors: 24,
-    totalMentees: 68,
-    ongoingSessions: 12,
-    pendingRequests: 5,
+    // 백엔드가 ApiResponse 형태로 내려준다고 가정
+    // { success, data, message, errorCode }
+    const result = response.data
+
+    if (!result.success) {
+      // 서버 쪽에서 비즈니스 에러를 준 경우
+      throw new Error(result.message || '대시보드 데이터를 불러오지 못했습니다.')
+    }
+
+    // data 안에 실제 합계 값들 있음
+    return result.data
+  } catch (error) {
+    console.error('관리자 대시보드 조회 실패:', error)
+    throw error
   }
 }
