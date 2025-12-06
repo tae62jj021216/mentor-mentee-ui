@@ -1,151 +1,110 @@
-// src/pages/AdminDashboard.jsx
-import React from "react";
+// 예시: src/pages/AdminDashboardPage.jsx
 
-export default function AdminDashboard() {
+import { useEffect, useState } from 'react';
+import {
+  fetchAdminDashboardSummary,
+  fetchAdminDashboardKpi,
+} from '../api/adminApi';
+
+export default function AdminDashboardPage() {
+  const [summary, setSummary] = useState(null);
+  const [kpi, setKpi] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const [summaryData, kpiData] = await Promise.all([
+          fetchAdminDashboardSummary(),
+          fetchAdminDashboardKpi(),
+        ]);
+
+        setSummary(summaryData);
+        setKpi(kpiData);
+      } catch (e) {
+        console.error('[AdminDashboard] 대시보드 데이터 로딩 실패', e);
+        setError(e.message ?? '대시보드 데이터를 불러오지 못했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, []);
+
+  if (loading) {
+    return <div>대시보드 데이터를 불러오는 중입니다...</div>;
+  }
+
+  if (error) {
+    return <div>대시보드 로딩 오류: {error}</div>;
+  }
+
+  return (
+    <div>
+      <h2 style={{ marginBottom: '16px', fontSize: '22px' }}>관리자 대시보드</h2>
+      <p style={{ marginBottom: '24px', color: '#6b7280' }}>
+        전체 멘토·멘티 현황과 세션 진행 상황, 핵심 KPI 지표를 한눈에 확인할 수 있는 화면입니다.
+      </p>
+
+      {/* 상단 기본 통계 카드들 */}
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
+        <StatCard title="전체 사용자 수" value={summary.totalUsers} />
+        <StatCard title="전체 게시글 수" value={summary.totalPosts} />
+        <StatCard title="전체 워크스페이스 수" value={summary.totalWorkspaces} />
+        <StatCard title="전체 세션 수" value={summary.totalSessions} />
+      </div>
+
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '32px' }}>
+        <StatCard title="전체 과제 수" value={summary.totalAssignments} />
+        <StatCard title="전체 제출 수" value={summary.totalSubmissions} />
+        <StatCard title="전체 피드백 수" value={summary.totalFeedbacks} />
+      </div>
+
+      {/* KPI 카드들 */}
+      <h3 style={{ marginBottom: '12px', fontSize: '18px' }}>핵심 KPI</h3>
+      <div style={{ display: 'flex', gap: '16px' }}>
+        <StatCard
+          title="매칭 성공률"
+          value={`${kpi.matchingSuccessRate.toFixed(1)} %`}
+        />
+        <StatCard
+          title="세션 완료율"
+          value={`${kpi.sessionCompletionRate.toFixed(1)} %`}
+        />
+        <StatCard
+          title="과제 제출률"
+          value={`${kpi.assignmentSubmissionRate.toFixed(1)} %`}
+        />
+        <StatCard
+          title="평균 출석률"
+          value={`${kpi.averageAttendanceRate.toFixed(1)} %`}
+        />
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ title, value }) {
   return (
     <div
       style={{
-        padding: "24px",
-        maxWidth: "1200px",
-        margin: "0 auto",
+        flex: 1,
+        padding: '20px',
+        borderRadius: '12px',
+        backgroundColor: 'white',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+        minWidth: 0,
       }}
     >
-      {/* 제목 */}
-      <h1
-        style={{
-          fontSize: "24px",
-          fontWeight: 700,
-          marginBottom: "16px",
-        }}
-      >
-        관리자 대시보드
-      </h1>
-
-      <p
-        style={{
-          marginBottom: "24px",
-          color: "#4b5563",
-          fontSize: "14px",
-        }}
-      >
-        전체 멘토·멘티 현황과 세션 진행 상황을 한눈에 확인할 수 있는 화면입니다.
-      </p>
-
-      {/* 상단 요약 카드 3개 */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-          gap: "16px",
-          marginBottom: "24px",
-        }}
-      >
-        <div
-          style={{
-            padding: "16px",
-            borderRadius: "12px",
-            backgroundColor: "#ffffff",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-          }}
-        >
-          <div style={{ fontSize: "13px", color: "#6b7280", marginBottom: "8px" }}>
-            전체 멘토 수
-          </div>
-          <div style={{ fontSize: "24px", fontWeight: 700 }}>—</div>
-          <div style={{ fontSize: "12px", color: "#9ca3af", marginTop: "4px" }}>
-            실제 데이터 연동 시 자동으로 집계됩니다.
-          </div>
-        </div>
-
-        <div
-          style={{
-            padding: "16px",
-            borderRadius: "12px",
-            backgroundColor: "#ffffff",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-          }}
-        >
-          <div style={{ fontSize: "13px", color: "#6b7280", marginBottom: "8px" }}>
-            전체 멘티 수
-          </div>
-          <div style={{ fontSize: "24px", fontWeight: 700 }}>—</div>
-          <div style={{ fontSize: "12px", color: "#9ca3af", marginTop: "4px" }}>
-            멘티 관리 화면과 연동될 예정입니다.
-          </div>
-        </div>
-
-        <div
-          style={{
-            padding: "16px",
-            borderRadius: "12px",
-            backgroundColor: "#ffffff",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-          }}
-        >
-          <div style={{ fontSize: "13px", color: "#6b7280", marginBottom: "8px" }}>
-            진행 중 세션 수
-          </div>
-          <div style={{ fontSize: "24px", fontWeight: 700 }}>—</div>
-          <div style={{ fontSize: "12px", color: "#9ca3af", marginTop: "4px" }}>
-            세션 목록 API와 연동해서 집계할 수 있습니다.
-          </div>
-        </div>
+      <div style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px' }}>
+        {title}
       </div>
-
-      {/* 하단 두 영역: 최근 세션 / 알림 */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "2fr 1fr",
-          gap: "16px",
-        }}
-      >
-        <div
-          style={{
-            padding: "16px",
-            borderRadius: "12px",
-            backgroundColor: "#ffffff",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-          }}
-        >
-          <h2
-            style={{
-              fontSize: "16px",
-              fontWeight: 600,
-              marginBottom: "12px",
-            }}
-          >
-            최근 세션 활동 (예시 영역)
-          </h2>
-          <p style={{ fontSize: "13px", color: "#6b7280" }}>
-            추후에 &quot;/api/sessions/recent&quot; 같은 엔드포인트와 연동해서
-            최근 멘토링 세션 목록을 보여줄 수 있습니다.
-          </p>
-        </div>
-
-        <div
-          style={{
-            padding: "16px",
-            borderRadius: "12px",
-            backgroundColor: "#ffffff",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-          }}
-        >
-          <h2
-            style={{
-              fontSize: "16px",
-              fontWeight: 600,
-              marginBottom: "12px",
-            }}
-          >
-            시스템 알림 (예시 영역)
-          </h2>
-          <p style={{ fontSize: "13px", color: "#6b7280" }}>
-            공지사항, 시스템 점검 안내, 중요 통계 변화 등을 표시하는 영역으로
-            사용할 수 있습니다.
-          </p>
-        </div>
-      </div>
+      <div style={{ fontSize: '24px', fontWeight: 600 }}>{value}</div>
     </div>
-  )
+  );
 }
