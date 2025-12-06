@@ -5,16 +5,15 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 5178, // 프론트 개발 서버 포트
+    port: 5178,
     proxy: {
-      // /api 로 시작하는 요청은 모두 백엔드(8080)으로 전달
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8080',   // ← 여기 꼭 8080
         changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
       },
-      // /auth 로 시작하는 요청도 백엔드(8080)으로 전달
       '/auth': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8080',   // 이것도 8080
         changeOrigin: true,
       },
     },

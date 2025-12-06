@@ -28,6 +28,13 @@ export default async function httpClient(path, options = {}) {
       : `Bearer ${trimmed}`
   }
 
+  // 🔍 디버깅용 로그: 어떤 URL에 어떤 Authorization을 붙여서 보내는지 확인
+  console.log('[httpClient] request', {
+    url,
+    method: options.method || 'GET',
+    authorization: headers.Authorization || '(no token)',
+  })
+
   const config = {
     method: options.method || 'GET',
     headers,

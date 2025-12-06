@@ -10,8 +10,8 @@ function parseJwt(token) {
 
     // 예시 payload: { sub: 이메일, uid: 1, role: 'ADMIN', ... }
     return {
-      username: payload.sub,   // 이메일
-      role: payload.role,      // ADMIN / MENTOR / MENTEE
+      username: payload.sub,  // 이메일
+      role: payload.role,     // ADMIN / MENTOR / MENTEE
       uid: payload.uid,
     };
   } catch (e) {
@@ -37,14 +37,19 @@ export function AuthProvider({ children }) {
 
   /**
    * 로그인 시 호출하는 함수
-   * - accessToken 을 인자로 받거나
-   * - 인자가 없으면 localStorage 에서 accessToken 을 읽어 user 상태만 갱신
+   *  - accessToken 문자열을 인자로 받는다.
+   *  - 인자가 없으면 localStorage 에서 accessToken 을 읽어 user 상태만 갱신한다.
    */
   const login = (accessToken) => {
     const token = accessToken || localStorage.getItem('accessToken');
     if (!token) {
       setUser(null);
       return;
+    }
+
+    // 토큰을 전달받았다면 localStorage 에도 저장
+    if (accessToken) {
+      localStorage.setItem('accessToken', accessToken);
     }
 
     const parsed = parseJwt(token);

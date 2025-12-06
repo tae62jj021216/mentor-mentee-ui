@@ -1,15 +1,28 @@
 // src/App.jsx
 import { Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
+
 import AdminDashboard from './pages/AdminDashboard';
 import MentorListPage from './pages/MentorListPage';
 import MenteeListPage from './pages/MenteeListPage';
 import SessionListPage from './pages/SessionListPage';
 import WorkspaceListPage from './pages/WorkspaceListPage';
 import WorkspaceDetailPage from './pages/WorkspaceDetailPage';
-import MenteeDashboard from './pages/MenteeDashboard';  // 🔹 새로 추가
+
 import MainLayout from './layouts/MainLayout';
 import ProtectedRoute from './ProtectedRoute';
+
+// 이미 만들어 둔 파일들
+import MenteeDashboard from './pages/MenteeDashboard';
+import MentorDashboard from './pages/MentorDashboard';
+
+// 멘티 전용 새 페이지들
+import MenteeMentorSearchPage from './pages/MenteeMentorSearchPage';
+import MenteeMatchingPage from './pages/MenteeMatchingPage';
+import MenteeSessionsPage from './pages/MenteeSessionsPage';
+
+// 멘토 가능 시간 페이지
+import MentorAvailabilityPage from './pages/MentorAvailabilityPage';
 
 function App() {
   return (
@@ -17,43 +30,124 @@ function App() {
       {/* 로그인 페이지 */}
       <Route path="/login" element={<LoginPage />} />
 
-      {/* 메인 레이아웃 안에 전체 페이지 포함 */}
+      {/* 레이아웃 내 보호된 라우트 */}
       <Route element={<MainLayout />}>
-        {/* 기본 경로: dashboard 로 이동 */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-        {/* 로그인 사용자만 접근 가능 */}
+        {/* 관리자/멘토 공용 대시보드 */}
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['ADMIN', 'MENTOR']}>
               <AdminDashboard />
             </ProtectedRoute>
           }
         />
 
-        {/* 목록/관리 페이지 */}
-        <Route path="/mentors" element={<MentorListPage />} />
-        <Route path="/mentees" element={<MenteeListPage />} />
-        <Route path="/sessions" element={<SessionListPage />} />
-        <Route path="/workspaces" element={<WorkspaceListPage />} />
+        {/* 관리자/멘토 공용 */}
+        <Route
+          path="/mentors"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <MentorListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mentees"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'MENTOR']}>
+              <MenteeListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/sessions"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'MENTOR']}>
+              <SessionListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/workspaces"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'MENTOR']}>
+              <WorkspaceListPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/workspaces/:workspaceId"
-          element={<WorkspaceDetailPage />}
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'MENTOR']}>
+              <WorkspaceDetailPage />
+            </ProtectedRoute>
+          }
         />
 
-        {/* 멘티 전용 대시보드: 오직 MENTEE 만 */}
+        {/* 멘티 전용 페이지 */}
         <Route
           path="/mentee-dashboard"
           element={
             <ProtectedRoute allowedRoles={['MENTEE']}>
-              <MenteeDashboard />   {/* 🔹 여기 반영됨 */}
+              <MenteeDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mentee-mentor-search"
+          element={
+            <ProtectedRoute allowedRoles={['MENTEE']}>
+              <MenteeMentorSearchPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mentee-profile"
+          element={
+            <ProtectedRoute allowedRoles={['MENTEE']}>
+              <MentorDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mentor-availability"
+          element={
+            <ProtectedRoute allowedRoles={['MENTEE']}>
+              <MentorAvailabilityPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mentee-matching"
+          element={
+            <ProtectedRoute allowedRoles={['MENTEE']}>
+              <MenteeMatchingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mentee-sessions"
+          element={
+            <ProtectedRoute allowedRoles={['MENTEE']}>
+              <MenteeSessionsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* 멘토 전용 */}
+        <Route
+          path="/mentor/availability"
+          element={
+            <ProtectedRoute allowedRoles={['MENTOR']}>
+              <MentorAvailabilityPage />
             </ProtectedRoute>
           }
         />
       </Route>
 
-      {/* 그 외 경로는 모두 로그인으로 */}
+      {/* 나머지는 로그인으로 리다이렉트 */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

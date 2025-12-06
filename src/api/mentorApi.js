@@ -31,7 +31,49 @@ export async function fetchMentorList({ page = 0, size = 20 } = {}) {
     content: mentors,
     totalElements,
     totalPages,
-    number: 0,        // 0페이지 (1페이지)로 고정
+    number: 0, // 0페이지 (1페이지)로 고정
     size: pageSize,
   }
 }
+
+/**
+ * 추천 멘토 모집글 조회
+ * GET /api/programs/{programId}/matching/recommendations
+ * Response: List<MatchingSuggestionResponse>
+ */
+export async function fetchRecommendedMentorPosts(programId) {
+  if (!programId) {
+    throw new Error('programId가 필요합니다.')
+  }
+
+  const res = await httpClient(`/programs/${programId}/matching/recommendations`, {
+    method: 'GET',
+  })
+
+  if (!res || res.success === false) {
+    const msg = res?.message || '추천 멘토 목록을 불러오지 못했습니다.'
+    throw new Error(msg)
+  }
+
+  // 백엔드 명세상 data가 List<MatchingSuggestionResponse>
+  // (postId, title, type, mentorId, mentorName, score ...)
+  return res.data || []
+}
+
+export const fetchMentorAvailabilities = (mentorId) => {
+  return httpClient
+    .get(`/mentors/${mentorId}/availabilities`)
+    .then((res) => res.data);
+};
+
+export const createMentorAvailability = (mentorId, payload) => {
+  return httpClient
+    .post(`/mentors/${mentorId}/availabilities`, payload)
+    .then((res) => res.data);
+};
+
+export const deleteMentorAvailability = (mentorId, availabilityId) => {
+  return httpClient.delete(
+    `/mentors/${mentorId}/availabilities/${availabilityId}`,
+  );
+};

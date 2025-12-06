@@ -22,15 +22,24 @@ export default function LoginPage() {
 
     try {
       // 🔐 로그인 요청 (authApi.js의 login 사용)
-      const res = await loginApi(loginId, password);
+      //  - 현재 authApi.login 은 { accessToken, tokenType } 를 반환하도록 구성되어 있음
+      const { accessToken, tokenType } = await loginApi(loginId, password);
 
-      // authApi 가 이미 localStorage 에 accessToken 을 저장해 둠
-      const accessToken = res?.data?.accessToken;
+      if (!accessToken) {
+        throw new Error('accessToken 이 응답에 없습니다.');
+      }
+
+      // 브라우저에 토큰 저장
+      localStorage.setItem('accessToken', accessToken);
+      if (tokenType) {
+        localStorage.setItem('tokenType', tokenType);
+      }
 
       // 🔐 AuthContext 에도 로그인 상태 반영 (JWT 파싱 → user 세팅)
       setAuthUser(accessToken);
 
-      // 🔐 로그인 성공 시 대시보드로 이동
+      // 🔐 로그인 성공 시 기본 대시보드로 이동
+      //   실제 라우팅 구조에 맞게 경로는 조정 가능
       navigate('/dashboard', { replace: true });
     } catch (err) {
       console.error('[LoginPage] 로그인 실패:', err);

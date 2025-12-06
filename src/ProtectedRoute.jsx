@@ -38,13 +38,9 @@ export default function ProtectedRoute({ children, allowedRoles }) {
    * allowedRoles=['ADMIN']
    * allowedRoles=['MENTOR','ADMIN']
    */
-  if (
-    allowedRoles &&
-    Array.isArray(allowedRoles) &&
-    allowedRoles.length > 0
-  ) {
+  if (allowedRoles && Array.isArray(allowedRoles) && allowedRoles.length > 0) {
     if (!allowedRoles.includes(user.role)) {
-      // 권한 없음 → 일단 dashboard나 login 등으로 돌려보낸다.
+      // 권한 없음 → 일단 dashboard 등으로 돌려보낸다.
       return <Navigate to="/dashboard" replace />;
       // 필요하면:
       // return <Navigate to="/403" replace />;
