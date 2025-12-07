@@ -1,3 +1,4 @@
+// src/layouts/MainLayout.jsx
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -11,6 +12,8 @@ function getMenuItems(role) {
     { icon: "🕒", label: "멘토 가능시간", path: "/mentor-availability" },
     { icon: "🤝", label: "매칭/요청", path: "/mentee-matching" },
     { icon: "🗂️", label: "세션/출석평가", path: "/mentee-sessions" },
+    // 🔹 멘토/멘티용 멘토링 게시판
+    { icon: "📰", label: "멘토링 게시판", path: "/posts" },
   ];
 
   // 🔹 관리자용 메뉴
@@ -21,7 +24,9 @@ function getMenuItems(role) {
       { icon: "🧑‍🏫", label: "멘토 목록", path: "/mentors" },
       { icon: "🧑‍🎓", label: "멘티 목록", path: "/mentees" },
       { icon: "📝", label: "세션 목록", path: "/sessions" },
-      { icon: "🎓", label: "학사 관리", path: "/admin-academic" }, // ⭐ 추가
+      // 🔹 관리자용 멘토링 게시판
+      { icon: "📰", label: "멘토링 게시판", path: "/posts" },
+      { icon: "🎓", label: "학사 관리", path: "/admin-academic" },
     ];
   }
 
@@ -115,7 +120,9 @@ export default function MainLayout() {
                   backgroundColor: isActive ? "#e5e7eb" : "transparent",
                 })}
               >
-                {item.icon && <span style={{ fontSize: "15px" }}>{item.icon}</span>}
+                {item.icon && (
+                  <span style={{ fontSize: "15px" }}>{item.icon}</span>
+                )}
                 <span>{item.label}</span>
               </NavLink>
             ))}

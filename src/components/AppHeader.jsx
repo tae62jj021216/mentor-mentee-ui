@@ -3,19 +3,11 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../api/authApi";
 
-/**
- * 상단 공통 헤더
- * - 왼쪽: 서비스 제목
- * - 오른쪽: 로그아웃 버튼
- */
 function AppHeader() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // 토큰 삭제 (authApi에 이미 있는 logout 함수 사용)
     logout();
-
-    // 로그인 화면으로 이동
     navigate("/login", { replace: true });
   };
 
@@ -36,23 +28,48 @@ function AppHeader() {
         zIndex: 10,
       }}
     >
-      <div style={{ fontWeight: 700, fontSize: "18px" }}>
+      <div
+        style={{ fontWeight: 700, fontSize: "18px", cursor: "pointer" }}
+        onClick={() => navigate("/dashboard")}
+      >
         멘토링 관리 시스템
       </div>
-      <button
-        type="button"
-        onClick={handleLogout}
-        style={{
-          padding: "6px 14px",
-          borderRadius: "4px",
-          border: "1px solid #ccc",
-          backgroundColor: "#f5f5f5",
-          cursor: "pointer",
-          fontSize: "14px",
-        }}
-      >
-        로그아웃
-      </button>
+
+      {/* 오른쪽 메뉴 */}
+      <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+        {/* 🔹 게시판 버튼 */}
+        <button
+          type="button"
+          onClick={() => navigate("/posts")}
+          style={{
+            padding: "6px 14px",
+            borderRadius: "4px",
+            border: "1px solid #2563eb",
+            backgroundColor: "#2563eb",
+            color: "#fff",
+            cursor: "pointer",
+            fontSize: "14px",
+          }}
+        >
+          게시판
+        </button>
+
+        {/* 🔹 로그아웃 버튼 */}
+        <button
+          type="button"
+          onClick={handleLogout}
+          style={{
+            padding: "6px 14px",
+            borderRadius: "4px",
+            border: "1px solid #ccc",
+            backgroundColor: "#f5f5f5",
+            cursor: "pointer",
+            fontSize: "14px",
+          }}
+        >
+          로그아웃
+        </button>
+      </div>
     </header>
   );
 }

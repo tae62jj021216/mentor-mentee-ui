@@ -27,6 +27,10 @@ import MentorAvailabilityPage from './pages/MentorAvailabilityPage';
 // 🔹 학사 관리(전공/학기/프로그램) 페이지
 import AdminAcademicPage from './pages/AdminAcademicPage';
 
+// 🔹 게시글 목록 / 작성 페이지
+import PostListPage from './pages/PostListPage';
+import PostFormPage from './pages/PostFormPage';
+
 function App() {
   return (
     <Routes>
@@ -155,6 +159,34 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['MENTOR']}>
               <MentorAvailabilityPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* 🔹 게시판: ADMIN / MENTOR / MENTEE 공통 조회 */}
+        <Route
+          path="/posts"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'MENTOR', 'MENTEE']}>
+              <PostListPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* 🔹 게시글 작성/수정: 멘토 / 멘티만 가능 */}
+        <Route
+          path="/posts/new"
+          element={
+            <ProtectedRoute allowedRoles={['MENTOR', 'MENTEE']}>
+              <PostFormPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/posts/:postId/edit"
+          element={
+            <ProtectedRoute allowedRoles={['MENTOR', 'MENTEE']}>
+              <PostFormPage />
             </ProtectedRoute>
           }
         />

@@ -111,6 +111,35 @@ const apiPut = async (path, body) => {
   return data;
 };
 
+/**
+ * 공통: DELETE 호출 (게시글 삭제용)
+ */
+const apiDelete = async (path) => {
+  const url = new URL(API_BASE_URL + path, window.location.origin);
+
+  const res = await fetch(url.toString(), {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      ...buildAuthHeaders(),
+    },
+  });
+
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+
+  if (!res.ok) {
+    const error = new Error('API DELETE error');
+    error.response = { status: res.status, data };
+    throw error;
+  }
+
+  if (data && typeof data === 'object' && 'data' in data) {
+    return data.data;
+  }
+  return data;
+};
+
 /* ------------------------------------------------------------------ */
 /* 게시판(post) 전용 API 래퍼                                         */
 /* ------------------------------------------------------------------ */
@@ -176,4 +205,65 @@ export const createPost = async (payload) => {
  */
 export const updatePost = async (postId, payload) => {
   return apiPut(`/posts/${postId}`, payload);
+};
+
+/**
+ * 게시글 삭제 (Soft Delete)
+ *  - DELETE /api/posts/{postId}
+ */
+export const deletePost = async (postId) => {
+  return apiDelete(`/posts/${postId}`);
+};
+
+/* ------------------------------------------------------------------ */
+/* PostApplication(신청) 전용 API 래퍼                                */
+/* ------------------------------------------------------------------ */
+
+/**
+ * 신청 생성
+ *  - POST /api/post-applications
+ *  - body: PostApplicationRequest
+ *
+ * 예:
+ * {
+ *   "postId": 10,
+ *   "message": "멘티로 참여하고 싶습니다!"
+ * }
+ */
+export const createPostApplication = async (payload) => {
+  return apiPost('/post-applications', payload);
+};
+
+/**
+ * 내가 보낸 신청 목록
+ *  - GET /api/post-applications/me/sent
+ */
+export const fetchMySentApplications = async () => {
+  return apiGet('/post-applications/me/sent');
+};
+
+/**
+ * 내가 받은 신청 목록
+ *  - GET /api/post-applications/me/received
+ */
+export const fetchMyReceivedApplications = async () => {
+  return apiGet('/post-applications/me/received');
+};
+
+/**
+ * 신청 수락
+ *  - POST /api/post-applications/{applicationId}/accept
+ *  - body 없음
+ */
+export const acceptPostApplication = async (applicationId) => {
+  return apiPost(`/post-applications/${applicationId}/accept`, {});
+};
+
+/**
+ * 신청 거절
+ *  - POST /api/post-applications/{applicationId}/reject
+ *  - body 없음
+ */
+export const rejectPostApplication = async (applicationId) => {
+  return apiPost(`/post-applications/${applicationId}/reject`, {});
 };
