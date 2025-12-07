@@ -4,12 +4,10 @@ import { useAuth } from "../context/AuthContext";
 
 /** 역할에 따라 보여줄 메뉴 구성 */
 function getMenuItems(role) {
-  // 🔹 멘토 · 멘티 공통 메뉴 (아이콘 포함)
-  const mentorMenteeCommonMenus = [
-    // { icon: "📊", label: "대시보드", path: "/mentee-dashboard" },  // ← 삭제
-    { icon: "🔍", label: "멘토 찾기", path: "/mentee-mentor-search" },
+  // 🔹 멘티 기본 메뉴
+  const menteeMenus = [
     { icon: "👤", label: "멘티 프로필", path: "/mentee-profile" },
-    { icon: "🕒", label: "멘토 가능시간", path: "/mentor-availability" },
+    { icon: "🔍", label: "멘토 찾기", path: "/mentee-mentor-search" },
     { icon: "🤝", label: "매칭/요청", path: "/mentee-matching" },
     { icon: "🗂️", label: "세션/출석평가", path: "/mentee-sessions" },
   ];
@@ -27,10 +25,25 @@ function getMenuItems(role) {
     ];
   }
 
-  // 🔹 멘토 · 멘티 동일 메뉴 사용
-  if (role === "MENTOR" || role === "MENTEE") {
+  // 🔹 멘토 메뉴: 라벨은 “멘토 프로필”, 나머지 라벨은 그대로, 경로만 멘토 전용
+  if (role === "MENTOR") {
+    const mentorMenus = [
+      { icon: "👤", label: "멘토 프로필", path: "/mentor-profile" },
+      { icon: "🔍", label: "멘토 찾기", path: "/mentor-mentor-search" },
+      { icon: "🤝", label: "매칭/요청", path: "/mentor-matching" },
+      { icon: "🗂️", label: "세션/출석평가", path: "/mentor-sessions" },
+    ];
+
     return [
-      ...mentorMenteeCommonMenus,
+      ...mentorMenus,
+      { icon: "📋", label: "멘토링 게시판", path: "/posts" },
+    ];
+  }
+
+  // 🔹 멘티 메뉴
+  if (role === "MENTEE") {
+    return [
+      ...menteeMenus,
       { icon: "📋", label: "멘토링 게시판", path: "/posts" },
     ];
   }

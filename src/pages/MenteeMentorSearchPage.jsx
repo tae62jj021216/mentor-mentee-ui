@@ -7,6 +7,10 @@ import {
   fetchMySentApplications,
 } from '../api/postApplicationApi';
 
+// src/pages/MenteeMentorSearchPage.jsx
+import AutoMatchingSection from '../components/AutoMatchingSection';
+
+
 const DEFAULT_PROGRAM_ID = 1; // POST 생성 시에만 사용
 
 const MenteeMentorSearchPage = () => {
@@ -534,6 +538,7 @@ const MenteeMentorSearchPage = () => {
           멘티 요청글
         </button>
       </div>
+      <AutoMatchingSection programId={DEFAULT_PROGRAM_ID} />
 
       {/* 헤더 + 작성 버튼 */}
       <div

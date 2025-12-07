@@ -1,34 +1,36 @@
 // src/App.jsx
-import { Routes, Route, Navigate } from 'react-router-dom';
-import LoginPage from './pages/LoginPage';
+import { Routes, Route, Navigate } from "react-router-dom";
+import LoginPage from "./pages/LoginPage";
 
-import AdminDashboard from './pages/AdminDashboard';
-import MentorListPage from './pages/MentorListPage';
-import MenteeListPage from './pages/MenteeListPage';
-import SessionListPage from './pages/SessionListPage';
-import WorkspaceListPage from './pages/WorkspaceListPage';
-import WorkspaceDetailPage from './pages/WorkspaceDetailPage';
+import AdminDashboard from "./pages/AdminDashboard";
+import MentorListPage from "./pages/MentorListPage";
+import MenteeListPage from "./pages/MenteeListPage";
+import SessionListPage from "./pages/SessionListPage";
+import WorkspaceListPage from "./pages/WorkspaceListPage";
+import WorkspaceDetailPage from "./pages/WorkspaceDetailPage";
 
-import MainLayout from './layouts/MainLayout';
-import ProtectedRoute from './ProtectedRoute';
+import MainLayout from "./layouts/MainLayout";
+import ProtectedRoute from "./ProtectedRoute";
 
-// 멘티 프로필 페이지 (파일명 변경 완료)
-import MenteeProfilePage from './pages/MenteeProfilePage';
+// 멘티 프로필 페이지
+import MenteeProfilePage from "./pages/MenteeProfilePage";
+// 멘토 프로필 페이지
+import MentorProfilePage from "./pages/MentorProfilePage";
 
 // 멘티 전용 페이지들
-import MenteeMentorSearchPage from './pages/MenteeMentorSearchPage';
-import MenteeMatchingPage from './pages/MenteeMatchingPage';
-import MenteeSessionsPage from './pages/MenteeSessionsPage';
+import MenteeMentorSearchPage from "./pages/MenteeMentorSearchPage";
+import MenteeMatchingPage from "./pages/MenteeMatchingPage";
+import MenteeSessionsPage from "./pages/MenteeSessionsPage";
 
 // 멘토 가능 시간 페이지
-import MentorAvailabilityPage from './pages/MentorAvailabilityPage';
+import MentorAvailabilityPage from "./pages/MentorAvailabilityPage";
 
 // 학사 관리(ADMIN 전용)
-import AdminAcademicPage from './pages/AdminAcademicPage';
+import AdminAcademicPage from "./pages/AdminAcademicPage";
 
 // 게시판
-import PostListPage from './pages/PostListPage';
-import PostFormPage from './pages/PostFormPage';
+import PostListPage from "./pages/PostListPage";
+import PostFormPage from "./pages/PostFormPage";
 
 function App() {
   return (
@@ -45,7 +47,7 @@ function App() {
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute allowedRoles={['ADMIN', 'MENTOR']}>
+            <ProtectedRoute allowedRoles={["ADMIN", "MENTOR"]}>
               <AdminDashboard />
             </ProtectedRoute>
           }
@@ -55,7 +57,7 @@ function App() {
         <Route
           path="/admin-academic"
           element={
-            <ProtectedRoute allowedRoles={['ADMIN']}>
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
               <AdminAcademicPage />
             </ProtectedRoute>
           }
@@ -65,7 +67,7 @@ function App() {
         <Route
           path="/mentors"
           element={
-            <ProtectedRoute allowedRoles={['ADMIN']}>
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
               <MentorListPage />
             </ProtectedRoute>
           }
@@ -74,7 +76,7 @@ function App() {
         <Route
           path="/mentees"
           element={
-            <ProtectedRoute allowedRoles={['ADMIN', 'MENTOR']}>
+            <ProtectedRoute allowedRoles={["ADMIN", "MENTOR"]}>
               <MenteeListPage />
             </ProtectedRoute>
           }
@@ -83,7 +85,7 @@ function App() {
         <Route
           path="/sessions"
           element={
-            <ProtectedRoute allowedRoles={['ADMIN', 'MENTOR']}>
+            <ProtectedRoute allowedRoles={["ADMIN", "MENTOR"]}>
               <SessionListPage />
             </ProtectedRoute>
           }
@@ -92,7 +94,7 @@ function App() {
         <Route
           path="/workspaces"
           element={
-            <ProtectedRoute allowedRoles={['ADMIN']}>
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
               <WorkspaceListPage />
             </ProtectedRoute>
           }
@@ -101,7 +103,7 @@ function App() {
         <Route
           path="/workspaces/:workspaceId"
           element={
-            <ProtectedRoute allowedRoles={['ADMIN', 'MENTOR']}>
+            <ProtectedRoute allowedRoles={["ADMIN", "MENTOR"]}>
               <WorkspaceDetailPage />
             </ProtectedRoute>
           }
@@ -111,53 +113,76 @@ function App() {
         <Route
           path="/mentee-profile"
           element={
-            <ProtectedRoute allowedRoles={['MENTEE']}>
+            <ProtectedRoute allowedRoles={["MENTEE"]}>
               <MenteeProfilePage />
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/mentee-mentor-search"
           element={
-            <ProtectedRoute allowedRoles={['MENTEE']}>
+            <ProtectedRoute allowedRoles={["MENTEE"]}>
               <MenteeMentorSearchPage />
             </ProtectedRoute>
           }
         />
-
-        <Route
-          path="/mentor-availability"
-          element={
-            <ProtectedRoute allowedRoles={['MENTEE']}>
-              <MentorAvailabilityPage />
-            </ProtectedRoute>
-          }
-        />
-
         <Route
           path="/mentee-matching"
           element={
-            <ProtectedRoute allowedRoles={['MENTEE']}>
+            <ProtectedRoute allowedRoles={["MENTEE"]}>
               <MenteeMatchingPage />
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/mentee-sessions"
           element={
-            <ProtectedRoute allowedRoles={['MENTEE']}>
+            <ProtectedRoute allowedRoles={["MENTEE"]}>
               <MenteeSessionsPage />
             </ProtectedRoute>
           }
         />
 
-        {/* 🔹 멘토 전용 */}
+        {/* 🔹 멘토 전용 – 프로필 + 멘토용 3개 탭 */}
+        <Route
+          path="/mentor-profile"
+          element={
+            <ProtectedRoute allowedRoles={["MENTOR"]}>
+              <MentorProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mentor-mentor-search"
+          element={
+            <ProtectedRoute allowedRoles={["MENTOR"]}>
+              {/* 우선 멘티용 검색 페이지를 재사용 */}
+              <MenteeMentorSearchPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mentor-matching"
+          element={
+            <ProtectedRoute allowedRoles={["MENTOR"]}>
+              <MenteeMatchingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mentor-sessions"
+          element={
+            <ProtectedRoute allowedRoles={["MENTOR"]}>
+              <MenteeSessionsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* 멘토 가능 시간 (멘토 전용) */}
         <Route
           path="/mentor/availability"
           element={
-            <ProtectedRoute allowedRoles={['MENTOR']}>
+            <ProtectedRoute allowedRoles={["MENTOR"]}>
               <MentorAvailabilityPage />
             </ProtectedRoute>
           }
@@ -167,7 +192,7 @@ function App() {
         <Route
           path="/posts"
           element={
-            <ProtectedRoute allowedRoles={['ADMIN', 'MENTOR', 'MENTEE']}>
+            <ProtectedRoute allowedRoles={["ADMIN", "MENTOR", "MENTEE"]}>
               <PostListPage />
             </ProtectedRoute>
           }
@@ -177,16 +202,15 @@ function App() {
         <Route
           path="/posts/new"
           element={
-            <ProtectedRoute allowedRoles={['MENTOR', 'MENTEE']}>
+            <ProtectedRoute allowedRoles={["MENTOR", "MENTEE"]}>
               <PostFormPage />
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/posts/:postId/edit"
           element={
-            <ProtectedRoute allowedRoles={['MENTOR', 'MENTEE']}>
+            <ProtectedRoute allowedRoles={["MENTOR", "MENTEE"]}>
               <PostFormPage />
             </ProtectedRoute>
           }

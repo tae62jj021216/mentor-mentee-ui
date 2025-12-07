@@ -1,18 +1,34 @@
-// 예시: src/pages/AdminDashboardPage.jsx
+// src/pages/AdminDashboard.jsx
 
 import { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import {
   fetchAdminDashboardSummary,
   fetchAdminDashboardKpi,
 } from '../api/adminApi';
 
 export default function AdminDashboardPage() {
+  const { user } = useAuth();
+
+  // 로그인 정보가 아직 없을 때
+  if (!user) {
+    return <div>로그인 정보를 확인하는 중입니다...</div>;
+  }
+
+  const isAdmin = user.role === 'ADMIN';
+
   const [summary, setSummary] = useState(null);
   const [kpi, setKpi] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // 관리자가 아니면 관리자 대시보드 API를 호출하지 않음
+    if (!isAdmin) {
+      setLoading(false);
+      return;
+    }
+
     const load = async () => {
       try {
         setLoading(true);
@@ -34,7 +50,19 @@ export default function AdminDashboardPage() {
     };
 
     load();
-  }, []);
+  }, [isAdmin]);
+
+  // 관리자 계정이 아니면 안내 문구만 표시
+  if (!isAdmin) {
+    return (
+      <div style={{ padding: '24px', color: '#4b5563' }}>
+        이 페이지는 <strong>관리자 전용 대시보드</strong>입니다.
+        <br />
+        멘토와 멘티는 왼쪽 메뉴에서 프로필, 멘토 찾기, 매칭/요청, 세션/출석평가,
+        멘토링 게시판 기능을 이용하세요.
+      </div>
+    );
+  }
 
   if (loading) {
     return <div>대시보드 데이터를 불러오는 중입니다...</div>;
@@ -48,7 +76,8 @@ export default function AdminDashboardPage() {
     <div>
       <h2 style={{ marginBottom: '16px', fontSize: '22px' }}>관리자 대시보드</h2>
       <p style={{ marginBottom: '24px', color: '#6b7280' }}>
-        전체 멘토·멘티 현황과 세션 진행 상황, 핵심 KPI 지표를 한눈에 확인할 수 있는 화면입니다.
+        전체 멘토·멘티 현황과 세션 진행 상황, 핵심 KPI 지표를 한눈에 확인할 수 있는
+        화면입니다.
       </p>
 
       {/* 상단 기본 통계 카드들 */}
@@ -97,7 +126,7 @@ function StatCard({ title, value }) {
         padding: '20px',
         borderRadius: '12px',
         backgroundColor: 'white',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
         minWidth: 0,
       }}
     >
