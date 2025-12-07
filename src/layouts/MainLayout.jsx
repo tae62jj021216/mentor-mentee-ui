@@ -6,14 +6,12 @@ import { useAuth } from "../context/AuthContext";
 function getMenuItems(role) {
   // 🔹 멘토 · 멘티 공통 메뉴 (아이콘 포함)
   const mentorMenteeCommonMenus = [
-    { icon: "📊", label: "대시보드", path: "/mentee-dashboard" },
+    // { icon: "📊", label: "대시보드", path: "/mentee-dashboard" },  // ← 삭제
     { icon: "🔍", label: "멘토 찾기", path: "/mentee-mentor-search" },
     { icon: "👤", label: "멘티 프로필", path: "/mentee-profile" },
     { icon: "🕒", label: "멘토 가능시간", path: "/mentor-availability" },
     { icon: "🤝", label: "매칭/요청", path: "/mentee-matching" },
     { icon: "🗂️", label: "세션/출석평가", path: "/mentee-sessions" },
-    // 🔹 멘토/멘티용 멘토링 게시판
-    { icon: "📰", label: "멘토링 게시판", path: "/posts" },
   ];
 
   // 🔹 관리자용 메뉴
@@ -24,15 +22,17 @@ function getMenuItems(role) {
       { icon: "🧑‍🏫", label: "멘토 목록", path: "/mentors" },
       { icon: "🧑‍🎓", label: "멘티 목록", path: "/mentees" },
       { icon: "📝", label: "세션 목록", path: "/sessions" },
-      // 🔹 관리자용 멘토링 게시판
-      { icon: "📰", label: "멘토링 게시판", path: "/posts" },
       { icon: "🎓", label: "학사 관리", path: "/admin-academic" },
+      { icon: "📋", label: "멘토링 게시판", path: "/posts" },
     ];
   }
 
   // 🔹 멘토 · 멘티 동일 메뉴 사용
   if (role === "MENTOR" || role === "MENTEE") {
-    return mentorMenteeCommonMenus;
+    return [
+      ...mentorMenteeCommonMenus,
+      { icon: "📋", label: "멘토링 게시판", path: "/posts" },
+    ];
   }
 
   // 🔹 게스트

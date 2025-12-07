@@ -12,11 +12,10 @@ import WorkspaceDetailPage from './pages/WorkspaceDetailPage';
 import MainLayout from './layouts/MainLayout';
 import ProtectedRoute from './ProtectedRoute';
 
-// 이미 만들어 둔 파일들
-import MenteeDashboard from './pages/MenteeDashboard';
-import MentorDashboard from './pages/MentorDashboard';
+// 멘티 프로필 페이지 (파일명 변경 완료)
+import MenteeProfilePage from './pages/MenteeProfilePage';
 
-// 멘티 전용 새 페이지들
+// 멘티 전용 페이지들
 import MenteeMentorSearchPage from './pages/MenteeMentorSearchPage';
 import MenteeMatchingPage from './pages/MenteeMatchingPage';
 import MenteeSessionsPage from './pages/MenteeSessionsPage';
@@ -24,21 +23,22 @@ import MenteeSessionsPage from './pages/MenteeSessionsPage';
 // 멘토 가능 시간 페이지
 import MentorAvailabilityPage from './pages/MentorAvailabilityPage';
 
-// 🔹 학사 관리(전공/학기/프로그램) 페이지
+// 학사 관리(ADMIN 전용)
 import AdminAcademicPage from './pages/AdminAcademicPage';
 
-// 🔹 게시글 목록 / 작성 페이지
+// 게시판
 import PostListPage from './pages/PostListPage';
 import PostFormPage from './pages/PostFormPage';
 
 function App() {
   return (
     <Routes>
-      {/* 로그인 페이지 */}
+      {/* 로그인 */}
       <Route path="/login" element={<LoginPage />} />
 
-      {/* 레이아웃 내 보호된 라우트 */}
+      {/* 보호된 라우트(레이아웃 포함) */}
       <Route element={<MainLayout />}>
+        {/* 기본 경로 → 관리자/멘토 대시보드로 이동 */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
         {/* 관리자/멘토 공용 대시보드 */}
@@ -51,7 +51,7 @@ function App() {
           }
         />
 
-        {/* 🔹 학사 관리(ADMIN 전용) */}
+        {/* 🔹 ADMIN 전용 학사 관리 */}
         <Route
           path="/admin-academic"
           element={
@@ -61,7 +61,7 @@ function App() {
           }
         />
 
-        {/* 관리자/멘토 공용 */}
+        {/* 관리자/멘토 권한 */}
         <Route
           path="/mentors"
           element={
@@ -70,6 +70,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/mentees"
           element={
@@ -78,6 +79,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/sessions"
           element={
@@ -86,14 +88,16 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/workspaces"
           element={
-            <ProtectedRoute allowedRoles={['ADMIN', 'MENTOR']}>
+            <ProtectedRoute allowedRoles={['ADMIN']}>
               <WorkspaceListPage />
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/workspaces/:workspaceId"
           element={
@@ -103,15 +107,16 @@ function App() {
           }
         />
 
-        {/* 멘티 전용 페이지 */}
+        {/* 🔹 멘티 전용 */}
         <Route
-          path="/mentee-dashboard"
+          path="/mentee-profile"
           element={
             <ProtectedRoute allowedRoles={['MENTEE']}>
-              <MenteeDashboard />
+              <MenteeProfilePage />
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/mentee-mentor-search"
           element={
@@ -120,14 +125,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/mentee-profile"
-          element={
-            <ProtectedRoute allowedRoles={['MENTEE']}>
-              <MentorDashboard />
-            </ProtectedRoute>
-          }
-        />
+
         <Route
           path="/mentor-availability"
           element={
@@ -136,6 +134,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/mentee-matching"
           element={
@@ -144,6 +143,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/mentee-sessions"
           element={
@@ -153,7 +153,7 @@ function App() {
           }
         />
 
-        {/* 멘토 전용 */}
+        {/* 🔹 멘토 전용 */}
         <Route
           path="/mentor/availability"
           element={
@@ -163,7 +163,7 @@ function App() {
           }
         />
 
-        {/* 🔹 게시판: ADMIN / MENTOR / MENTEE 공통 조회 */}
+        {/* 🔹 게시판 (전체 조회 가능) */}
         <Route
           path="/posts"
           element={
@@ -173,7 +173,7 @@ function App() {
           }
         />
 
-        {/* 🔹 게시글 작성/수정: 멘토 / 멘티만 가능 */}
+        {/* 게시글 작성/수정 — 멘토/멘티만 */}
         <Route
           path="/posts/new"
           element={
@@ -182,6 +182,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/posts/:postId/edit"
           element={
@@ -192,7 +193,7 @@ function App() {
         />
       </Route>
 
-      {/* 나머지는 로그인으로 리다이렉트 */}
+      {/* 기타 → 로그인으로 */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

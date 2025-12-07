@@ -1,6 +1,6 @@
 // src/pages/WorkspaceListPage.jsx
 import { useEffect, useState } from 'react'
-import { fetchMyWorkspaces } from '../api/workspaceApi'
+import { fetchAdminWorkspaces } from '../api/workspaceApi'
 
 export default function WorkspaceListPage() {
   const [workspaces, setWorkspaces] = useState([])
@@ -13,9 +13,8 @@ export default function WorkspaceListPage() {
         setLoading(true)
         setError(null)
 
-        const data = await fetchMyWorkspaces()
-        // 백엔드 문서 예시 구조를 가정
-        // data: [{ workspaceId, programName, roleInWorkspace, status, lastUpdatedAt, ... }]
+        // ✅ 이제 관리자용 전체 목록 API 사용
+        const data = await fetchAdminWorkspaces()
         setWorkspaces(Array.isArray(data) ? data : [])
       } catch (err) {
         console.error('워크스페이스 목록 로딩 실패:', err)
@@ -55,7 +54,7 @@ export default function WorkspaceListPage() {
             marginBottom: '8px',
           }}
         >
-          내 워크스페이스
+          워크스페이스 관리
         </h1>
         <p
           style={{
@@ -64,7 +63,8 @@ export default function WorkspaceListPage() {
             marginBottom: '16px',
           }}
         >
-          내가 멘토 또는 멘티로 참여 중인 멘토링 팀(워크스페이스) 목록입니다.
+          전체 멘토링 팀(워크스페이스)의 상태를 한눈에 확인하고 관리하는 화면입니다.
+          프로그램별 운영 현황, 참여 인원, 상태 등을 점검할 수 있습니다.
         </p>
 
         {/* 로딩 상태 */}
@@ -143,7 +143,7 @@ export default function WorkspaceListPage() {
                         color: '#9ca3af',
                       }}
                     >
-                      현재 참여 중인 워크스페이스가 없습니다.
+                      등록된 워크스페이스가 없습니다.
                     </td>
                   </tr>
                 ) : (

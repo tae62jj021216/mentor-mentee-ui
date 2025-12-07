@@ -1,7 +1,7 @@
 // src/pages/MenteeMentorSearchPage.jsx
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { fetchPosts, createPost } from '../api/postApi';
+import { fetchPosts, createPost, deletePost } from '../api/postApi';
 import {
   createPostApplication,
   fetchMySentApplications,
@@ -12,11 +12,14 @@ const DEFAULT_PROGRAM_ID = 1; // POST 생성 시에만 사용
 const MenteeMentorSearchPage = () => {
   const { user } = useAuth();
 
+  // 현재 탭: 멘토 모집글 / 멘티 요청글
   const [activeType, setActiveType] = useState('MENTOR_RECRUIT');
 
+  // 게시글 목록
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // 작성 폼 on/off + 폼 내용
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
     title: '',
@@ -29,31 +32,59 @@ const MenteeMentorSearchPage = () => {
   });
   const [submitting, setSubmitting] = useState(false);
 
+  // 내가 신청한 글 ID 목록
   const [appliedPostIds, setAppliedPostIds] = useState([]);
+  // 화면 하단 안내 메시지
   const [lastMessage, setLastMessage] = useState('');
 
+  // -------------------------------------------------------
+  // 권한 체크
+  // -------------------------------------------------------
+  // 작성 가능 여부
   const canWrite = (() => {
     if (!user) return false;
     const role = user.role;
+
     if (activeType === 'MENTOR_RECRUIT') {
+      // 멘토 모집글은 멘토 / BOTH / 관리자만 작성
       return role === 'MENTOR' || role === 'BOTH' || role === 'ADMIN';
     }
+    // 멘티 요청글은 멘티 / BOTH / 관리자만 작성
     return role === 'MENTEE' || role === 'BOTH' || role === 'ADMIN';
   })();
 
+  // 현재 탭에서 "신청하기" 버튼을 누를 수 있는지
   const canApplyToCurrentTab = () => {
     if (!user) return false;
     const role = user.role;
 
     if (activeType === 'MENTOR_RECRUIT') {
+      // 멘토 모집글 → 멘티 / BOTH 가 신청
       return role === 'MENTEE' || role === 'BOTH';
     }
     if (activeType === 'MENTEE_REQUEST') {
+      // 멘티 요청글 → 멘토 / BOTH 가 신청
       return role === 'MENTOR' || role === 'BOTH';
     }
     return false;
   };
 
+  // 현재 로그인 유저가 글 작성자인지
+  const isMyPost = (post) => {
+    const userId = user?.id ?? user?.userId;
+    const authorId = post.authorId ?? post.author?.id;
+
+    if (!userId || !authorId) return false;
+    return String(userId) === String(authorId);
+  };
+
+  // 삭제 가능 여부: 본인 글 또는 관리자
+  const canDeletePost = (post) => {
+    if (!user) return false;
+    return isMyPost(post) || user.role === 'ADMIN';
+  };
+
+  // 상단 제목/설명
   const headerTitle =
     activeType === 'MENTOR_RECRUIT'
       ? '멘토 모집글 (MENTOR_RECRUIT)'
@@ -64,7 +95,9 @@ const MenteeMentorSearchPage = () => {
       ? '멘토들이 개설한 튜터링/스터디 모집글 목록입니다. 관심 있는 주제를 선택해 신청할 수 있습니다.'
       : '멘티들이 올린 학습 요청글입니다. 도와줄 수 있는 멘토는 이 글을 보고 신청할 수 있습니다.';
 
+  // -------------------------------------------------------
   // 내가 보낸 신청 목록 → appliedPostIds
+  // -------------------------------------------------------
   useEffect(() => {
     const loadSentApplications = async () => {
       if (!user) return;
@@ -84,14 +117,29 @@ const MenteeMentorSearchPage = () => {
     loadSentApplications();
   }, [user]);
 
-  // 게시글 목록: 전체 받아온 뒤 type으로 필터
+  // -------------------------------------------------------
+  // 게시글 목록 로딩 (탭 변경 시마다)
+  // -------------------------------------------------------
   const loadPosts = async () => {
     setLoading(true);
     try {
-      const allPosts = await fetchPosts(); // /api/posts 전체 조회
-      const filtered = Array.isArray(allPosts)
-        ? allPosts.filter((p) => p.type === activeType)
+      const result = await fetchPosts(); // /api/posts 전체 조회
+      const list = Array.isArray(result)
+        ? result
+        : result?.content && Array.isArray(result.content)
+        ? result.content
         : [];
+
+      // 1) 현재 탭 타입만 남기고
+      // 2) soft delete 된 글(status === 'DELETED') 은 숨긴다
+      const filtered = list.filter((p) => {
+        if (p.type !== activeType) return false;
+        if (p.status && String(p.status).toUpperCase() === 'DELETED') {
+          return false;
+        }
+        return true;
+      });
+
       setPosts(filtered);
     } catch (error) {
       console.error('게시글 목록 조회 실패:', error);
@@ -116,10 +164,19 @@ const MenteeMentorSearchPage = () => {
     setLastMessage('');
   }, [activeType]);
 
+  // -------------------------------------------------------
   // 폼 입력
+  // -------------------------------------------------------
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // "새 글 작성" / "작성 취소" 토글
+  const handleClickWrite = () => {
+    if (!canWrite) return;
+    setShowForm((prev) => !prev);
+    setLastMessage('');
   };
 
   // 글 등록
@@ -143,7 +200,7 @@ const MenteeMentorSearchPage = () => {
         : null;
 
     const payload = {
-      programId: DEFAULT_PROGRAM_ID, // 생성 시에만 programId 전달
+      programId: DEFAULT_PROGRAM_ID,
       type: activeType,
       title: form.title.trim(),
       content: form.content.trim(),
@@ -226,6 +283,29 @@ const MenteeMentorSearchPage = () => {
     }
   };
 
+  // 삭제하기 (본인 글 + 관리자만 버튼 노출)
+  const handleDelete = async (post) => {
+    if (!canDeletePost(post)) return;
+    if (!window.confirm(`"${post.title}" 글을 삭제하시겠습니까?`)) return;
+
+    try {
+      await deletePost(post.id);
+
+      // 프론트 쪽 목록에서도 즉시 제거
+      setPosts((prev) =>
+        prev.filter((p) => p.id !== post.id),
+      );
+
+      setLastMessage(`"${post.title}" 글이 삭제되었습니다.`);
+    } catch (error) {
+      console.error('[MenteeMentorSearchPage] 게시글 삭제 실패:', error);
+      alert('게시글 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
+  // -------------------------------------------------------
+  // 카드 렌더링
+  // -------------------------------------------------------
   const renderPostCard = (post) => {
     const createdAt =
       post.createdAt || post.created_at || post.registeredAt || null;
@@ -239,6 +319,7 @@ const MenteeMentorSearchPage = () => {
 
     const canApply = canApplyToCurrentTab();
     const alreadyApplied = appliedPostIds.includes(post.id);
+    const deletable = canDeletePost(post);
 
     return (
       <div
@@ -337,14 +418,16 @@ const MenteeMentorSearchPage = () => {
           )}
         </div>
 
-        {canApply && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              flexShrink: 0,
-            }}
-          >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            gap: '8px',
+            flexShrink: 0,
+          }}
+        >
+          {canApply && (
             <button
               type="button"
               onClick={() => handleApply(post)}
@@ -362,11 +445,36 @@ const MenteeMentorSearchPage = () => {
             >
               {alreadyApplied ? '신청 완료' : '신청하기'}
             </button>
-          </div>
-        )}
+          )}
+
+          {deletable && (
+            <button
+              type="button"
+              onClick={() => handleDelete(post)}
+              style={{
+                padding: '6px 10px',
+                borderRadius: '9999px',
+                border: '1px solid #fecaca',
+                backgroundColor: '#fef2f2',
+                color: '#b91c1c',
+                fontSize: '11px',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              삭제
+            </button>
+          )}
+        </div>
       </div>
     );
   };
+
+  // -------------------------------------------------------
+  // 렌더링
+  // -------------------------------------------------------
+  const writeButtonLabel =
+    activeType === 'MENTOR_RECRUIT' ? '새 모집글 작성' : '새 요청글 작성';
 
   return (
     <div style={{ padding: '24px' }}>
@@ -377,6 +485,7 @@ const MenteeMentorSearchPage = () => {
         프로그램, 태그, 가용 시간 정보를 바탕으로 멘토·멘티를 찾는 게시판입니다.
       </p>
 
+      {/* 상단 탭 */}
       <div
         style={{
           display: 'inline-flex',
@@ -426,7 +535,7 @@ const MenteeMentorSearchPage = () => {
         </button>
       </div>
 
-      {/** 작성 폼 */}
+      {/* 헤더 + 작성 버튼 */}
       <div
         style={{
           display: 'flex',
@@ -452,7 +561,7 @@ const MenteeMentorSearchPage = () => {
         {canWrite && (
           <button
             type="button"
-            onClick={() => setShowForm((prev) => !prev)}
+            onClick={handleClickWrite}
             style={{
               padding: '8px 14px',
               borderRadius: '9999px',
@@ -464,12 +573,13 @@ const MenteeMentorSearchPage = () => {
               fontWeight: 600,
             }}
           >
-            {showForm ? '작성 취소' : '새 글 작성'}
+            {showForm ? '작성 취소' : writeButtonLabel}
           </button>
         )}
       </div>
 
-      {showForm && (
+      {/* 작성 폼 : 두 탭 모두에서, canWrite && showForm 이면 표시 */}
+      {showForm && canWrite && (
         <form
           onSubmit={handleSubmit}
           style={{
@@ -650,6 +760,7 @@ const MenteeMentorSearchPage = () => {
         </form>
       )}
 
+      {/* 게시글 리스트 */}
       <div
         style={{
           display: 'flex',
