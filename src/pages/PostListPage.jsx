@@ -81,6 +81,21 @@ export default function PostListPage() {
     });
   };
 
+  // ─────────────────────────────────────────────
+  // 🔍 프론트 단에서 한 번 더 필터 적용
+  //    (백엔드에서 타입/상태 필터를 무시해도 여기서 확실하게 걸러줌)
+  // ─────────────────────────────────────────────
+  const filteredPosts = posts.filter((post) => {
+    // 백엔드 필드명이 type 또는 postType 일 수 있으니 둘 다 대비
+    const postType = post.type || post.postType || '';
+    const postStatus = post.status || '';
+
+    const matchType = !type || postType === type;
+    const matchStatus = !status || postStatus === status;
+
+    return matchType && matchStatus;
+  });
+
   return (
     <div style={{ padding: '24px 32px' }}>
       <h2
@@ -156,7 +171,9 @@ export default function PostListPage() {
         {canCreatePost && (
           <button
             type="button"
-            onClick={() => navigate('/posts/new?type=' + (type || 'MENTOR_RECRUIT'))}
+            onClick={() =>
+              navigate('/posts/new?type=' + (type || 'MENTOR_RECRUIT'))
+            }
             style={{
               marginLeft: 'auto',
               padding: '8px 14px',
@@ -176,8 +193,10 @@ export default function PostListPage() {
       {/* 목록 영역 */}
       {loading ? (
         <div style={{ padding: '16px 4px', fontSize: 13 }}>불러오는 중…</div>
-      ) : posts.length === 0 ? (
-        <div style={{ padding: '16px 4px', fontSize: 13, color: '#6b7280' }}>
+      ) : filteredPosts.length === 0 ? (
+        <div
+          style={{ padding: '16px 4px', fontSize: 13, color: '#6b7280' }}
+        >
           등록된 글이 없습니다.
         </div>
       ) : (
@@ -189,7 +208,7 @@ export default function PostListPage() {
             border: '1px solid #e5e7eb',
           }}
         >
-          {posts.map((post) => (
+          {filteredPosts.map((post) => (
             <div
               key={post.id}
               onClick={() => navigate(`/posts/${post.id}`)}

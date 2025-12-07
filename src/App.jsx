@@ -142,6 +142,11 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/workspaces/:workspaceId"
+          element={<WorkspaceDetailPage />}
+        />
+
 
         {/* 🔹 멘토 전용 – 프로필 + 멘토용 3개 탭 */}
         <Route
