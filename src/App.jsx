@@ -24,6 +24,9 @@ import MenteeSessionsPage from './pages/MenteeSessionsPage';
 // 멘토 가능 시간 페이지
 import MentorAvailabilityPage from './pages/MentorAvailabilityPage';
 
+// 🔹 학사 관리(전공/학기/프로그램) 페이지
+import AdminAcademicPage from './pages/AdminAcademicPage';
+
 function App() {
   return (
     <Routes>
@@ -40,6 +43,16 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['ADMIN', 'MENTOR']}>
               <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* 🔹 학사 관리(ADMIN 전용) */}
+        <Route
+          path="/admin-academic"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminAcademicPage />
             </ProtectedRoute>
           }
         />
