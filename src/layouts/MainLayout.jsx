@@ -19,7 +19,6 @@ function getMenuItems(role) {
       { icon: "📁", label: "워크스페이스", path: "/workspaces" },
       { icon: "🧑‍🏫", label: "멘토 목록", path: "/mentors" },
       { icon: "🧑‍🎓", label: "멘티 목록", path: "/mentees" },
-      { icon: "📝", label: "세션 목록", path: "/sessions" },
       { icon: "🎓", label: "학사 관리", path: "/admin-academic" },
       { icon: "📋", label: "멘토링 게시판", path: "/posts" },
     ];

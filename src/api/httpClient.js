@@ -1,68 +1,85 @@
 // src/api/httpClient.js
-import { API_BASE_URL } from './config'
+
+import { API_BASE_URL } from './config';
 
 /**
  * 공통 HTTP 클라이언트
- * - 모든 요청에 API_BASE_URL(/api)을 prefix로 붙임
- * - JSON 응답 / 문자열 응답 모두 처리
- * - 네트워크 오류만 throw, 나머지는 호출한 쪽에서 판단
+ *
+ *  - path 예시:
+ *      '/users'
+ *      '/academic/majors'
+ *      '/workspaces/admin'
+ *    👉 절대 '/api/...' 를 넣지 않는다. ('/api' 는 API_BASE_URL 에서 붙여줌)
+ *
+ *  - options: fetch 옵션(메서드, 헤더, 바디 등)
+ *  - 응답이 { success, data, message, ... } 형태인 경우 data 를 꺼내서 반환
  */
 export default async function httpClient(path, options = {}) {
-  const url = `${API_BASE_URL}${path}`
+  // path 형식 보정
+  if (!path.startsWith('/')) {
+    path = `/${path}`;
+  }
+
+  // 혹시 실수로 '/api/...' 를 넘긴 경우 자동으로 정정 + 경고 로그
+  if (path.startsWith('/api/')) {
+    console.warn(
+      '[httpClient] path 에 "/api" 가 중복 포함되어 있습니다. 자동으로 제거합니다.',
+      path,
+    );
+    path = path.replace(/^\/api/, '');
+  }
+
+  const token = localStorage.getItem('accessToken');
+  const tokenType = localStorage.getItem('tokenType') || 'Bearer';
 
   const headers = {
-    'Content-Type': 'application/json',
     ...(options.headers || {}),
-  }
+  };
 
-  // 토큰 자동 포함
-  const token =
-    localStorage.getItem('token') ||
-    localStorage.getItem('authToken') ||
-    localStorage.getItem('accessToken')
+  // FormData 가 아닐 때만 JSON Content-Type 기본 설정
+  if (!(options.body instanceof FormData) && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   if (token) {
-    const trimmed = token.trim()
-    headers.Authorization = trimmed.toLowerCase().startsWith('bearer ')
-      ? trimmed
-      : `Bearer ${trimmed}`
+    headers.Authorization = `${tokenType} ${token}`;
   }
 
-  // 🔍 디버깅용 로그: 어떤 URL에 어떤 Authorization을 붙여서 보내는지 확인
-  console.log('[httpClient] request', {
-    url,
-    method: options.method || 'GET',
-    authorization: headers.Authorization || '(no token)',
-  })
+  const url = `${API_BASE_URL}${path}`;
 
-  const config = {
-    method: options.method || 'GET',
-    headers,
-  }
-
-  if (options.body) {
-    config.body = JSON.stringify(options.body)
-  }
-
+  let res;
   try {
-    const res = await fetch(url, config)
-
-    // 텍스트로 먼저 읽고, JSON 파싱을 시도
-    const text = await res.text()
-    if (!text) {
-      return null
-    }
-
-    try {
-      const data = JSON.parse(text)
-      return data
-    } catch {
-      // JSON 이 아니면 그냥 문자열로 반환
-      return text
-    }
-  } catch (err) {
-    console.error('[httpClient] network error:', err)
-    // 네트워크 자체 오류만 throw
-    throw err
+    res = await fetch(url, {
+      ...options,
+      headers,
+    });
+  } catch (e) {
+    console.error('[httpClient] fetch 에러', url, e);
+    throw e;
   }
+
+  const text = await res.text();
+  let json = null;
+
+  if (text) {
+    try {
+      json = JSON.parse(text);
+    } catch (e) {
+      console.error('[httpClient] JSON 파싱 실패', e, text);
+      json = null;
+    }
+  }
+
+  if (!res.ok) {
+    const err = new Error('요청 실패');
+    err.response = { status: res.status, data: json };
+    throw err;
+  }
+
+  // ApiResponse<T> 형태({ data: ... })면 data 만 반환
+  if (json && typeof json === 'object' && 'data' in json) {
+    return json.data;
+  }
+
+  return json;
 }

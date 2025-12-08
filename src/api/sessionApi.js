@@ -9,14 +9,14 @@ import httpClient from './httpClient'
  * 2) 그냥 배열 또는 페이지 객체: [...], 혹은 { content: [...], totalElements, ... }
  *
  * httpClient 는 fetch 래퍼로,
- * - httpClient('/sessions') 처럼 "함수 호출" 형태로 사용하고
+ * - httpClient('/admin/sessions') 처럼 "함수 호출" 형태로 사용하고
  * - 반환값이 곧 서버에서 내려준 JSON 또는 문자열이다.
  */
 export async function fetchSessions() {
   try {
-    // ❗예전 코드에서는 httpClient.get('/sessions') 를 썼는데,
-    // httpClient는 함수이므로 이렇게 호출해야 한다.
-    const result = await httpClient('/sessions') // 실제 호출: GET /api/sessions
+    // 🔹 관리자 전용 세션 목록 API 호출
+    //    실제 요청: GET /api/admin/sessions
+    const result = await httpClient('/admin/sessions')
 
     // 응답이 문자열(에러 메시지 텍스트 등)인 경우
     if (typeof result === 'string') {

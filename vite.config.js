@@ -7,14 +7,20 @@ export default defineConfig({
   server: {
     port: 5178,
     proxy: {
+      // 일반 REST API → /api로 시작
       '/api': {
-        target: 'http://localhost:8080',   // ← 여기 꼭 8080
+        target: 'http://localhost:8080',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
+        // /api 접두어 그대로 유지
+        rewrite: (path) => path,
       },
+
+      // 로그인/회원가입 등 인증 API → /auth 로 시작
       '/auth': {
-        target: 'http://localhost:8080',   // 이것도 8080
+        target: 'http://localhost:8080',
         changeOrigin: true,
+        // /auth 접두어 그대로 유지
+        // rewrite 필요 없음
       },
     },
   },

@@ -17,6 +17,7 @@ const buildAuthHeaders = () => {
 /**
  * 공통: GET 호출
  *  - params 객체를 쿼리 스트링으로 변환해서 붙여준다.
+ *  - path 에는 '/posts', '/post-applications/...' 처럼 api 없이**만 넘긴다.
  */
 const apiGet = async (path, params = {}) => {
   const url = new URL(API_BASE_URL + path, window.location.origin)
@@ -156,8 +157,8 @@ const apiDelete = async (path) => {
  */
 export const fetchPosts = async (options = {}) => {
   try {
-    // 🔸 여기서부터는 항상 /api/... 로 요청
-    const result = await apiGet('/api/posts', options)
+    // ✅ 여기서부터는 항상 '/posts' 로만 넘긴다 (앞의 '/api' 는 API_BASE_URL 이 붙여줌)
+    const result = await apiGet('/posts', options)
 
     if (Array.isArray(result)) {
       return result
@@ -167,7 +168,7 @@ export const fetchPosts = async (options = {}) => {
     const statusCode = error?.response?.status
     if (statusCode === 404) {
       console.warn(
-        '[postApi] GET /api/posts 404 응답 → 게시글 없음으로 간주하고 빈 결과 반환',
+        '[postApi] GET /posts 404 응답 → 게시글 없음으로 간주하고 빈 결과 반환',
       )
       return { content: [], totalPages: 0, page: 0, totalElements: 0 }
     }
@@ -179,7 +180,7 @@ export const fetchPosts = async (options = {}) => {
  * 게시글 상세 조회
  */
 export const fetchPostById = async (postId) => {
-  return apiGet(`/api/posts/${postId}`)
+  return apiGet(`/posts/${postId}`)
 }
 
 /**
@@ -193,7 +194,7 @@ export const fetchPost = fetchPostById
  *  - payload는 Backend 명세의 PostCreateRequest 형태
  */
 export const createPost = async (payload) => {
-  return apiPost('/api/posts', payload)
+  return apiPost('/posts', payload)
 }
 
 /**
@@ -201,7 +202,7 @@ export const createPost = async (payload) => {
  *  - PUT /api/posts/{postId}
  */
 export const updatePost = async (postId, payload) => {
-  return apiPut(`/api/posts/${postId}`, payload)
+  return apiPut(`/posts/${postId}`, payload)
 }
 
 /**
@@ -209,7 +210,7 @@ export const updatePost = async (postId, payload) => {
  *  - DELETE /api/posts/{postId}
  */
 export const deletePost = async (postId) => {
-  return apiDelete(`/api/posts/${postId}`)
+  return apiDelete(`/posts/${postId}`)
 }
 
 /* ------------------------------------------------------------------ */
@@ -222,7 +223,7 @@ export const deletePost = async (postId) => {
  *  - body: PostApplicationRequest
  */
 export const createPostApplication = async (payload) => {
-  return apiPost('/api/post-applications', payload)
+  return apiPost('/post-applications', payload)
 }
 
 /**
@@ -230,7 +231,7 @@ export const createPostApplication = async (payload) => {
  *  - GET /api/post-applications/me/sent
  */
 export const fetchMySentApplications = async () => {
-  return apiGet('/api/post-applications/me/sent')
+  return apiGet('/post-applications/me/sent')
 }
 
 /**
@@ -238,7 +239,7 @@ export const fetchMySentApplications = async () => {
  *  - GET /api/post-applications/me/received
  */
 export const fetchMyReceivedApplications = async () => {
-  return apiGet('/api/post-applications/me/received')
+  return apiGet('/post-applications/me/received')
 }
 
 /**
@@ -246,7 +247,7 @@ export const fetchMyReceivedApplications = async () => {
  *  - POST /api/post-applications/{applicationId}/accept
  */
 export const acceptPostApplication = async (applicationId) => {
-  return apiPost(`/api/post-applications/${applicationId}/accept`, {})
+  return apiPost(`/post-applications/${applicationId}/accept`, {})
 }
 
 /**
@@ -254,5 +255,5 @@ export const acceptPostApplication = async (applicationId) => {
  *  - POST /api/post-applications/{applicationId}/reject
  */
 export const rejectPostApplication = async (applicationId) => {
-  return apiPost(`/api/post-applications/${applicationId}/reject`, {})
+  return apiPost(`/post-applications/${applicationId}/reject`, {})
 }
